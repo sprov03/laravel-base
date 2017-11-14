@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1a3e053aef3d360904357dedc3b9108a",
-    "content-hash": "1fcbcff86adc4160ed9b5b0c54cd7e47",
+    "hash": "5383521e388b96cbb0ec65edcc94c611",
+    "content-hash": "b8654e0e39d4dd8c505150cd0a3c49fa",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -3687,16 +3687,16 @@
         },
         {
             "name": "sprov03/laravel-code-generator",
-            "version": "1.1.5",
+            "version": "1.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sprov03/code-generator.git",
-                "reference": "f2efa72036c5cde146e5d4676729a2dac6ccc592"
+                "reference": "8eb90734ef365448de7e08d38032f98c108c167b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sprov03/code-generator/zipball/f2efa72036c5cde146e5d4676729a2dac6ccc592",
-                "reference": "f2efa72036c5cde146e5d4676729a2dac6ccc592",
+                "url": "https://api.github.com/repos/sprov03/code-generator/zipball/8eb90734ef365448de7e08d38032f98c108c167b",
+                "reference": "8eb90734ef365448de7e08d38032f98c108c167b",
                 "shasum": ""
             },
             "require": {
@@ -3726,7 +3726,7 @@
                 }
             ],
             "description": "Generator Temperated Code form database tables.  This Package provides data to templates that you create to generate code to scaffold projects rapidly so you can spend most of your time doing the fun stuff.",
-            "time": "2017-11-04 19:27:38"
+            "time": "2017-11-12 15:38:02"
         },
         {
             "name": "symfony/class-loader",

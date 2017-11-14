@@ -11,10 +11,16 @@
 |
 */
 
-Route::resource('/sites', 'SiteController');
-Route::resource('/users', 'UserController');
-
 Route::get('/', function () {
     return view('welcome');
 });
 
+Route::resource('/api/users', 'UserController');
+Route::resource('/api/forms', 'FormController');
+Route::resource('/api/form_fields', 'FormFieldController');
+Route::resource('/api/form_field_types', 'FormFieldTypeController');
+Route::resource('/api/sites', 'SiteController');
+Route::resource('/api/buying_websites', 'BuyingWebsiteController');
+Route::resource('/api/selling_websites', 'SellingWebsiteController');
+Route::resource('/api/histories', 'HistoryController');
+/** Routes File Marker: Do Not Remove Being Used Buy Code Generator */

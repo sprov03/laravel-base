@@ -17,8 +17,8 @@
         "symfony/dom-crawler": "2.8.*|3.0.*",
         "barryvdh/laravel-ide-helper": "^2.4",
         "barryvdh/laravel-debugbar": "v2.4.3",
-        "sprov03/laravel-code-generator": "~1.1",
-        "pivonka-projects/laravel-model-assertions": "^1.0"
+        "pivonka-projects/laravel-model-assertions": "^1.0",
+        "sprov03/laravel-code-generator": "^1.1"
     },
     "autoload": {
         "psr-4": {

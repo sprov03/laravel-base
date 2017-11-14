@@ -8,5 +8,17 @@
     "gulp": "^3.9.1",
     "laravel-elixir": "^5.0.0",
     "bootstrap-sass": "^3.0.0"
+  },
+  "browser": {
+    "vue": "vue/dist/vue.common.js"
+  },
+  "dependencies": {
+    "axios": "^0.17.1",
+    "laravel-elixir-vueify": "^1.0.6",
+    "lodash": "^4.17.4",
+    "logger": "0.0.1",
+    "query-string": "^5.0.1",
+    "vue": "^2.5.3",
+    "vuex": "^3.0.1"
   }
 }
