@@ -19124,6 +19124,307 @@ module.exports = function (str) {
 };
 
 },{}],33:[function(require,module,exports){
+var Vue // late bind
+var map = Object.create(null)
+var shimmed = false
+var isBrowserify = false
+
+/**
+ * Determine compatibility and apply patch.
+ *
+ * @param {Function} vue
+ * @param {Boolean} browserify
+ */
+
+exports.install = function (vue, browserify) {
+  if (shimmed) return
+  shimmed = true
+
+  Vue = vue
+  isBrowserify = browserify
+
+  exports.compatible = !!Vue.internalDirectives
+  if (!exports.compatible) {
+    console.warn(
+      '[HMR] vue-loader hot reload is only compatible with ' +
+      'Vue.js 1.0.0+.'
+    )
+    return
+  }
+
+  // patch view directive
+  patchView(Vue.internalDirectives.component)
+  console.log('[HMR] Vue component hot reload shim applied.')
+  // shim router-view if present
+  var routerView = Vue.elementDirective('router-view')
+  if (routerView) {
+    patchView(routerView)
+    console.log('[HMR] vue-router <router-view> hot reload shim applied.')
+  }
+}
+
+/**
+ * Shim the view directive (component or router-view).
+ *
+ * @param {Object} View
+ */
+
+function patchView (View) {
+  var unbuild = View.unbuild
+  View.unbuild = function (defer) {
+    if (!this.hotUpdating) {
+      var prevComponent = this.childVM && this.childVM.constructor
+      removeView(prevComponent, this)
+      // defer = true means we are transitioning to a new
+      // Component. Register this new component to the list.
+      if (defer) {
+        addView(this.Component, this)
+      }
+    }
+    // call original
+    return unbuild.call(this, defer)
+  }
+}
+
+/**
+ * Add a component view to a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function addView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    if (!map[id]) {
+      map[id] = {
+        Component: Component,
+        views: [],
+        instances: []
+      }
+    }
+    map[id].views.push(view)
+  }
+}
+
+/**
+ * Remove a component view from a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function removeView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    map[id].views.$remove(view)
+  }
+}
+
+/**
+ * Create a record for a hot module, which keeps track of its construcotr,
+ * instnaces and views (component directives or router-views).
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+exports.createRecord = function (id, options) {
+  if (typeof options === 'function') {
+    options = options.options
+  }
+  if (typeof options.el !== 'string' && typeof options.data !== 'object') {
+    makeOptionsHot(id, options)
+    map[id] = {
+      Component: null,
+      views: [],
+      instances: []
+    }
+  }
+}
+
+/**
+ * Make a Component options object hot.
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+function makeOptionsHot (id, options) {
+  options.hotID = id
+  injectHook(options, 'created', function () {
+    var record = map[id]
+    if (!record.Component) {
+      record.Component = this.constructor
+    }
+    record.instances.push(this)
+  })
+  injectHook(options, 'beforeDestroy', function () {
+    map[id].instances.$remove(this)
+  })
+}
+
+/**
+ * Inject a hook to a hot reloadable component so that
+ * we can keep track of it.
+ *
+ * @param {Object} options
+ * @param {String} name
+ * @param {Function} hook
+ */
+
+function injectHook (options, name, hook) {
+  var existing = options[name]
+  options[name] = existing
+    ? Array.isArray(existing)
+      ? existing.concat(hook)
+      : [existing, hook]
+    : [hook]
+}
+
+/**
+ * Update a hot component.
+ *
+ * @param {String} id
+ * @param {Object|null} newOptions
+ * @param {String|null} newTemplate
+ */
+
+exports.update = function (id, newOptions, newTemplate) {
+  var record = map[id]
+  // force full-reload if an instance of the component is active but is not
+  // managed by a view
+  if (!record || (record.instances.length && !record.views.length)) {
+    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.')
+    if (!isBrowserify) {
+      window.location.reload()
+    } else {
+      // browserify-hmr somehow sends incomplete bundle if we reload here
+      return
+    }
+  }
+  if (!isBrowserify) {
+    // browserify-hmr already logs this
+    console.log('[HMR] Updating component: ' + format(id))
+  }
+  var Component = record.Component
+  // update constructor
+  if (newOptions) {
+    // in case the user exports a constructor
+    Component = record.Component = typeof newOptions === 'function'
+      ? newOptions
+      : Vue.extend(newOptions)
+    makeOptionsHot(id, Component.options)
+  }
+  if (newTemplate) {
+    Component.options.template = newTemplate
+  }
+  // handle recursive lookup
+  if (Component.options.name) {
+    Component.options.components[Component.options.name] = Component
+  }
+  // reset constructor cached linker
+  Component.linker = null
+  // reload all views
+  record.views.forEach(function (view) {
+    updateView(view, Component)
+  })
+  // flush devtools
+  if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
+    window.__VUE_DEVTOOLS_GLOBAL_HOOK__.emit('flush')
+  }
+}
+
+/**
+ * Update a component view instance
+ *
+ * @param {Directive} view
+ * @param {Function} Component
+ */
+
+function updateView (view, Component) {
+  if (!view._bound) {
+    return
+  }
+  view.Component = Component
+  view.hotUpdating = true
+  // disable transitions
+  view.vm._isCompiled = false
+  // save state
+  var state = extractState(view.childVM)
+  // remount, make sure to disable keep-alive
+  var keepAlive = view.keepAlive
+  view.keepAlive = false
+  view.mountComponent()
+  view.keepAlive = keepAlive
+  // restore state
+  restoreState(view.childVM, state, true)
+  // re-eanble transitions
+  view.vm._isCompiled = true
+  view.hotUpdating = false
+}
+
+/**
+ * Extract state from a Vue instance.
+ *
+ * @param {Vue} vm
+ * @return {Object}
+ */
+
+function extractState (vm) {
+  return {
+    cid: vm.constructor.cid,
+    data: vm.$data,
+    children: vm.$children.map(extractState)
+  }
+}
+
+/**
+ * Restore state to a reloaded Vue instance.
+ *
+ * @param {Vue} vm
+ * @param {Object} state
+ */
+
+function restoreState (vm, state, isRoot) {
+  var oldAsyncConfig
+  if (isRoot) {
+    // set Vue into sync mode during state rehydration
+    oldAsyncConfig = Vue.config.async
+    Vue.config.async = false
+  }
+  // actual restore
+  if (isRoot || !vm._props) {
+    vm.$data = state.data
+  } else {
+    Object.keys(state.data).forEach(function (key) {
+      if (!vm._props[key]) {
+        // for non-root, only restore non-props fields
+        vm.$data[key] = state.data[key]
+      }
+    })
+  }
+  // verify child consistency
+  var hasSameChildren = vm.$children.every(function (c, i) {
+    return state.children[i] && state.children[i].cid === c.constructor.cid
+  })
+  if (hasSameChildren) {
+    // rehydrate children
+    vm.$children.forEach(function (c, i) {
+      restoreState(c, state.children[i])
+    })
+  }
+  if (isRoot) {
+    Vue.config.async = oldAsyncConfig
+  }
+}
+
+function format (id) {
+  var match = id.match(/[^\/]+\.vue$/)
+  return match ? match[0] : id
+}
+
+},{}],34:[function(require,module,exports){
 (function (process,global){
 /*!
  * Vue.js v2.5.3
@@ -29742,7 +30043,7 @@ Vue$3.compile = compileToFunctions;
 module.exports = Vue$3;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":29}],34:[function(require,module,exports){
+},{"_process":29}],35:[function(require,module,exports){
 (function (process){
 /**
  * vuex v3.0.1
@@ -30678,7 +30979,7 @@ var index = {
 module.exports = index;
 
 }).call(this,require('_process'))
-},{"_process":29}],35:[function(require,module,exports){
+},{"_process":29}],36:[function(require,module,exports){
 'use strict';
 
 var _vue = require('vue');
@@ -30688,6 +30989,10 @@ var _vue2 = _interopRequireDefault(_vue);
 var _vuex = require('vuex');
 
 var _vuex2 = _interopRequireDefault(_vuex);
+
+var _http = require('./http.js');
+
+var _http2 = _interopRequireDefault(_http);
 
 var _store = require('./store');
 
@@ -30695,195 +31000,212 @@ var _store2 = _interopRequireDefault(_store);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Created by shawnpivonka on 11/13/17.
- */
+_vue2.default.use(_vuex2.default); /**
+                                    * Created by shawnpivonka on 11/13/17.
+                                    */
 
-_vue2.default.use(_vuex2.default);
+_vue2.default.use(_http2.default);
 
 var app = new _vue2.default({
     store: _store2.default,
-    el: 'body',
+    el: '#app',
     components: {
-        page: page,
-        loader: loader
+        usersIndex: require('./components/users/index.vue'),
+        usersCreate: require('./components/users/create.vue')
     },
-    mixins: [topLevelPagesMixin],
+    mixins: [],
     created: function created() {
-        console.log.debug('app created');
+        console.log('app created');
     }
 });
 
-},{"./store":38,"vue":33,"vuex":34}],36:[function(require,module,exports){
+},{"./components/users/create.vue":37,"./components/users/index.vue":38,"./http.js":40,"./store":42,"vue":34,"vuex":35}],37:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-var Vue = require('vue');
+exports.default = {
+    name: 'user',
+    data: function data() {
+        return {
+            pageLoaded: false
+        };
+    },
+
+    mixins: [],
+    components: {},
+    computed: {
+        user: function user() {
+            return this.$store.state.user;
+        }
+    },
+    mounted: function mounted() {
+        this.$store.state.modules['user'].default.actions.setNewResourceInStore();
+
+        //.then((response) => {this.pageLoaded = true;});
+    },
+
+    methods: {}
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-xs-12\">\n            <h1 class=\"pull-left\">Create User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-xs-12\">\n            Loading Page...\n            <!--<loading-and-errors loading-message=\"Loading Products...\"></loading-and-errors>-->\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-xs-12\">\n            <pre>{{this.user}}</pre>\n        </div>\n    </div>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-24339090", module.exports)
+  } else {
+    hotAPI.update("_v-24339090", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":34,"vue-hot-reload-api":33}],38:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
+    name: 'users',
+    data: function data() {
+        return {
+            pageLoaded: false,
+            columns: [{
+                header: 'Name',
+                column: 'name',
+                link: function link(user) {
+                    return '/api/users/' + user.id;
+                }
+            }, {
+                header: 'Email',
+                column: 'email'
+            }]
+        };
+    },
+
+    mixins: [],
+    components: {
+        userListRow: require('./user-list-row.vue')
+    },
+    computed: {
+        users: function users() {
+            return this.$store.state.users.data;
+        }
+    },
+    mounted: function mounted() {
+        var _this = this;
+
+        this.$httpGet('users').then(function (response) {
+            _this.pageLoaded = true;
+        });
+    },
+
+    methods: {}
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-xs-12\">\n            <h1 class=\"pull-left\">Users</h1>\n            <a class=\"btn btn-success margin-bottom-md pull-right margin-top-md\" href=\"/api/users/create\">\n                Create User\n            </a>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-xs-12\">\n            Loading Users...\n            <!--<loading-and-errors loading-message=\"Loading Products...\"></loading-and-errors>-->\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-xs-12\">\n\n            <div class=\"col-sm-6\">\n                <!--<search :callback=\"searchProducts\"></search>-->\n            </div>\n            <div class=\"col-sm-6\">\n                <div class=\"pull-right\">\n                    <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n                </div>\n            </div>\n\n            <table id=\"users-table\" class=\"table table-responsive table-striped table-bordered\">\n                <thead>\n                <tr>\n                    <th v-for=\"column in columns\">{{ column.header }}</th>\n                </tr>\n                </thead>\n                <tbody>\n                    <tr v-for=\"user in users\" is=\"user-list-row\" :resource=\"user\" :columns=\"columns\"></tr>\n                </tbody>\n            </table>\n\n            <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n        </div>\n    </div>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-5277b7ee", module.exports)
+  } else {
+    hotAPI.update("_v-5277b7ee", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./user-list-row.vue":39,"vue":34,"vue-hot-reload-api":33}],39:[function(require,module,exports){
+'use strict';
+
+// import lpButton from 'app/components/lp-button.vue';
+
+module.exports = {
+    mixins: [],
+    props: ['resource', 'columns'],
+    components: {},
+    data: function data() {
+        return {};
+    },
+    computed: {},
+    watch: {},
+    mounted: function mounted() {},
+
+    methods: {},
+    events: {}
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<tr>\n    <th v-for=\"column in columns\">\n        <a v-if=\"column.link\" :href=\"column.link(resource)\">{{resource[column['column']]}}</a>\n        <span v-else=\"\">{{resource[column['column']]}}</span>\n    </th>\n</tr>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-79fcd189", module.exports)
+  } else {
+    hotAPI.update("_v-79fcd189", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":34,"vue-hot-reload-api":33}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var Http = {};
 var axios = require('axios');
 
-var save = exports.save = function save(_ref, _ref2) {
-    var state = _ref.state,
-        dispatch = _ref.dispatch;
-    var url = _ref2.url,
-        config = _ref2.config,
-        fieldBag = _ref2.fieldBag;
+Http.install = function (Vue, options) {
+    Vue.prototype.$httpGet = function (resource, urlParams, query) {
+        var _$store$state$modules,
+            _this = this;
 
-    dispatch('resetStatus', { config: config });
-    return axios.post(url, fieldBag).then(function (response) {
-        dispatch('setResponse', { config: config, response: response });
+        var url = (_$store$state$modules = this.$store.state.modules[resource].default.state).url.apply(_$store$state$modules, _toConsumableArray(urlParams || []));
 
-        return response;
-    }, function (_ref3) {
-        var response = _ref3.response;
+        return axios.get(url, query).then(function (response) {
+            _this.$store.commit('UPDATE_RESOURCE', { name: resource, value: response.data });
+        }).catch(function (response) {
+            alert(response.data.message);
+        });
+    };
 
-        dispatch('setError', { config: config, response: response });
+    Vue.prototype.$httpPost = function (resource, urlParams, fieldBag) {
+        var _$store$state$modules2,
+            _this2 = this;
 
-        throw response;
-    });
+        var url = (_$store$state$modules2 = this.$store.state.modules[resource].default.state).url.apply(_$store$state$modules2, _toConsumableArray(urlParams || []));
+
+        return axios.post(url, fieldBag).then(function (response) {
+            _this2.$store.commit('UPDATE_RESOURCE', { name: resource, value: response.data });
+        }).catch(function (response) {
+            alert(response.data.message);
+        });
+    };
+
+    Vue.prototype.$httpPut = function (resource, fieldBag) {
+        return this.$store.dispatch('update', {
+            'resource': resource,
+            'resource_variables': urlParams,
+            'fieldBag': fieldBag
+        });
+    };
+
+    Vue.prototype.$httpDelete = function (resource) {
+        return this.$store.dispatch('remove', {
+            'resource': resource,
+            'resource_variables': urlParams
+        });
+    };
 };
 
-var update = exports.update = function update(_ref4, _ref5) {
-    var dispatch = _ref4.dispatch;
-    var url = _ref5.url,
-        config = _ref5.config,
-        fieldBag = _ref5.fieldBag;
+exports.default = Http; /**
+                        * Created by shawnpivonka on 11/14/17.
+                        */
 
-    dispatch('resetStatus', { config: config });
-    return axios.put(url, fieldBag).then(function (response) {
-        dispatch('setResponse', { config: config, response: response });
-
-        return response;
-    }, function (_ref6) {
-        var response = _ref6.response;
-
-        dispatch('setError', { config: config, response: response });
-
-        throw response;
-    });
-};
-
-var get = exports.get = function get(_ref7, _ref8) {
-    var dispatch = _ref7.dispatch;
-    var url = _ref8.url,
-        config = _ref8.config,
-        query = _ref8.query;
-
-    dispatch('resetStatus', { config: config });
-    return axios.get(url, { params: query }).then(function (response) {
-        dispatch('setResponse', { config: config, response: response });
-
-        return response;
-    }, function (_ref9) {
-        var response = _ref9.response;
-
-        dispatch('setError', { config: config, response: response });
-
-        throw response;
-    });
-};
-
-var destroy = exports.destroy = function destroy(_ref10, _ref11) {
-    var dispatch = _ref10.dispatch;
-    var url = _ref11.url,
-        config = _ref11.config,
-        query = _ref11.query;
-
-    dispatch('resetStatus', { config: config });
-    return axios.delete(url, { params: query }).then(function (response) {
-        dispatch('setResponse', { config: config, response: response });
-
-        return response;
-    }, function (_ref12) {
-        var response = _ref12.response;
-
-        dispatch('setError', { config: config, response: response });
-
-        throw response;
-    });
-};
-
-/**
- * Reset the status while talking to the server
- *
- * Config requires: resource name (to map to status)
- *
- *
- * @param commit
- * @param getters
- * @param config
- */
-var resetStatus = exports.resetStatus = function resetStatus(_ref13, _ref14) {
-    var commit = _ref13.commit,
-        getters = _ref13.getters;
-    var config = _ref14.config;
-
-    Vue.log.debug('resetting status ' + config.resource);
-
-    if (getters.status(config.resource) === undefined) {
-        Vue.log.debug('adding status for ' + config.resource);
-
-        commit('ADD_STATUS', config.resource);
-    }
-
-    commit('SET_STATUS', { resource: config.status || config.resource, loading: true, loaded: false, errors: [] });
-};
-
-/**
- * Set the result of a successful talk with the server
- *
- * Config requires:
- * a. resource name (to map to status)
- * b. Optionally a custom setter {name, options} to set the results into the store
- * c. Optionally don't do again with the response.
- *
- * @param commit
- * @param config
- * @param response
- */
-var setResponse = exports.setResponse = function setResponse(_ref15, _ref16) {
-    var commit = _ref15.commit;
-    var config = _ref16.config,
-        response = _ref16.response;
-
-    commit('SET_STATUS', { resource: config.status || config.resource, loading: false, loaded: true, errors: [] });
-
-    if (config.noResponse) {
-        Vue.log.debug('NoResponse flag, skipping set response.');
-
-        return;
-    }
-
-    if (config.setter) {
-        // console.log('custom setter firing...');
-        commit(config.setter.name, { options: config.setter.options, resourceData: response.data });
-    } else {
-        // console.log('update setter firing...');
-        commit('UPDATE', { module: config.module, resource: config.resource, resourceData: response.data });
-    }
-};
-
-var setError = exports.setError = function setError(_ref17, _ref18) {
-    var commit = _ref17.commit;
-    var config = _ref18.config,
-        response = _ref18.response;
-
-    commit('SET_STATUS', { resource: config.status || config.resource, loading: false, loaded: false, errors: response.data });
-};
-
-var checkStatus = exports.checkStatus = function checkStatus(_ref19, _ref20) {
-    var commit = _ref19.commit,
-        getters = _ref19.getters;
-    var resource = _ref20.resource;
-
-    if (getters.status(resource) === undefined) {
-        // console.log('adding status');
-        commit('ADD_STATUS', resource);
-    }
-};
-
-},{"axios":1,"vue":33}],37:[function(require,module,exports){
+},{"axios":1}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -30891,13 +31213,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = {};
 
-},{}],38:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getters = exports.state = undefined;
+exports.getters = exports.actions = exports.state = undefined;
 
 var _vue = require('vue');
 
@@ -30911,426 +31233,76 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _actions = require('./actions');
-
-var actions = _interopRequireWildcard(_actions);
-
 var _mutations = require('./mutations');
 
 var mutations = _interopRequireWildcard(_mutations);
-
-var _account = require('./modules/account');
-
-var _account2 = _interopRequireDefault(_account);
-
-var _config = require('./config');
-
-var _config2 = _interopRequireDefault(_config);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_vue2.default.use(_vuex2.default); /* eslint-disable no-shadow */
+_vue2.default.use(_vuex2.default);
+
+// import * as actions from './actions';
+/* eslint-disable no-shadow */
 var state = exports.state = {
     status: {},
     page: { loading: true, loaded: false, errors: [], message: '' },
-    breadcrumbs: { links: null, settings: null },
-    alerts: [],
-    modal: {},
-    url: { search: {}, hash: {} },
-    config: _config2.default
+    users: [],
+    config: require('./config'),
+    modules: {
+        user: require('./moduels/users'),
+        users: require('./moduels/users')
+    }
 };
+
+/**
+ * Global actions
+ */
+var actions = exports.actions = {};
 
 /**
  * Global getters
  */
-var getters = exports.getters = {
-    lookup: function lookup(state) {
-        return function (path) {
-            return path.split('.').reduce(function (obj, index) {
-                if (!obj[index]) {
-                    console.log.debug('can\'t find:' + index + ' in:', obj);
-                    return {};
-                }
-
-                return obj[index];
-            }, state);
-        };
-    },
-    user: function user(state) {
-        return function (id) {
-            if (!id) {
-                return state.account.user;
-            }
-
-            var user = _lodash2.default.find(state.account.users, { id: id });
-
-            if (!user) {
-                return {};
-            }
-
-            return user;
-        };
-    },
-
-    /**
-     * These are simple helper to push a specific convention
-     * @param state
-     */
-    resource: function resource(state) {
-        return function (module, resource) {
-            return state[module][resource];
-        };
-    },
-    resourceTest: function resourceTest(state) {
-        return function (options) {
-            return state[options.module][options.resource];
-        };
-    },
-    settings: function settings(state) {
-        return function (resource, field) {
-            if (state.settings[resource] === undefined) {
-                return {};
-            }
-
-            return state.settings[resource][field] || {};
-        };
-    },
-    status: function status(state) {
-        return function (resource) {
-            var status = state.status[resource];
-
-            if (status === undefined) {
-                console.log.debug('Error: Status for ' + resource + ' was checked before it was created.');
-            }
-
-            return status;
-        };
-    },
-    anchor: function anchor(state) {
-        return Object.keys(state.url.hash)[0];
-    }
-};
+var getters = exports.getters = {};
 
 exports.default = new _vuex2.default.Store({
     state: state,
     actions: actions,
     mutations: mutations,
-    getters: getters,
-    modules: {
-        account: _account2.default
-    }
+    getters: getters
 });
 
-},{"./actions":36,"./config":37,"./modules/account":39,"./mutations":40,"lodash":28,"vue":33,"vuex":34}],39:[function(require,module,exports){
-'use strict';
+},{"./config":41,"./moduels/users":43,"./mutations":44,"lodash":28,"vue":34,"vuex":35}],43:[function(require,module,exports){
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _axios = require('axios');
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _vue = require('vue');
-
-var _vue2 = _interopRequireDefault(_vue);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 var state = {
-    login: {},
-    user: {},
-    users: [],
-    account: {},
-    roles: [],
-    allRoles: [],
-    actions: [],
-    invites: {},
-    invite: {},
-    channels: [],
-    bell: {},
-    features: {},
-    featurePlan: {},
-    planPreview: {},
-    invoices: { data: [] }
-};
-
-// getters
-/* eslint-disable no-shadow */
-var getters = {
-    users: function users(state) {
-        return state.users;
-    },
-    isSupport: function isSupport(state) {
-        return state.account.support;
+    url: function url() {
+        return '/api/users';
     },
 
-    features: function features(state) {
-        return function (type) {
-            return _lodash2.default.filter(state.features, { feature_type_id: type });
-        };
-    },
-    feature: function feature(state) {
-        return function (type) {
-            return _lodash2.default.find(state.features, { feature_type_id: type });
-        };
-    },
-    featureCount: function featureCount(state) {
-        return function (type) {
-            var features = _lodash2.default.filter(state.features, { feature_type_id: type });
-
-            return _lodash2.default.reduce(features, function (total, feature) {
-                return total + feature.count;
-            }, 0);
-        };
+    newResource: {
+        name: "",
+        email: ""
     }
 };
 
+// getters
+var getters = {};
+
 // actions
 var actions = {
-    loadAccountFromPage: function loadAccountFromPage(_ref) {
-        var commit = _ref.commit;
-
-        if (!window.FlipPilot) {
-            _vue2.default.log.info('No Account info on page.');
-            return;
-        }
-        commit('SET_ACCOUNT_STATE', { resource: 'user', value: window.FlipPilot.user });
-        commit('SET_ACCOUNT_STATE', { resource: 'account', value: window.FlipPilot.account });
-        commit('SET_ACCOUNT_STATE', { resource: 'users', value: window.FlipPilot.users });
-        commit('SET_ACCOUNT_STATE', { resource: 'roles', value: window.FlipPilot.roles });
-        commit('SET_ACCOUNT_STATE', { resource: 'actions', value: window.FlipPilot.actions });
-        commit('SET_ACCOUNT_STATE', { resource: 'channels', value: window.FlipPilot.alert_channels });
-        commit('SET_ACCOUNT_STATE', { resource: 'bell', value: window.FlipPilot.bell });
-        commit('SET_ACCOUNT_STATE', { resource: 'features', value: window.FlipPilot.features });
-    },
-    loadAccount: function loadAccount(_ref2) {
-        var commit = _ref2.commit,
-            dispatch = _ref2.dispatch;
-
-        var resource = 'account';
-        var module = 'account';
-
-        dispatch('resetStatus', { config: { module: module, resource: resource } });
-
-        return _axios2.default.get('/api/accounts', {}).then(function (response) {
-            dispatch('setResponse', { config: { module: module, resource: resource }, response: response });
-            // Remove user from list of all account users
-            // delete response.data.users[response.data.user.id];
-
-            commit('SET_ACCOUNT_STATE', { resource: 'user', value: response.data.user });
-            commit('SET_ACCOUNT_STATE', { resource: 'account', value: response.data.account });
-            commit('SET_ACCOUNT_STATE', { resource: 'users', value: response.data.users });
-            commit('SET_ACCOUNT_STATE', { resource: 'roles', value: response.data.roles });
-            commit('SET_ACCOUNT_STATE', { resource: 'actions', value: response.data.actions });
-
-            return response;
-        }, function (response) {
-            dispatch('setError', { config: { module: module, resource: resource }, response: response });
-
-            throw response;
-        });
-    },
-    loadAccountRoles: function loadAccountRoles(_ref3) {
-        var dispatch = _ref3.dispatch;
-
-        return dispatch('get', { url: '/api/accounts/roles', config: { module: 'account', resource: 'allRoles' } }, { root: true });
-    },
-    loadAccountBilling: function loadAccountBilling(_ref4) {
-        var dispatch = _ref4.dispatch;
-
-        return dispatch('get', { url: '/api/accounts/billing', config: { module: 'account', resource: 'account' } }, { root: true });
-    },
-    loadInvites: function loadInvites(_ref5) {
-        var dispatch = _ref5.dispatch;
-
-        return dispatch('get', { url: '/api/accounts/invites', config: { module: 'account', resource: 'invites' } }, { root: true });
-    },
-    updateUserRole: function updateUserRole(_ref6, _ref7) {
-        var dispatch = _ref6.dispatch;
-        var user = _ref7.user,
-            roles = _ref7.roles;
-
-        return dispatch('update', { url: '/api/accounts/users/' + user.id + '/roles',
-            config: { module: 'account', resource: 'user-roles-' + user.id },
-            fieldBag: { roles: roles } }, { root: true });
-    },
-    saveInvite: function saveInvite(_ref8) {
-        var dispatch = _ref8.dispatch,
-            commit = _ref8.commit,
-            invite = _ref8.invite;
-
-        return dispatch('save', { url: '/api/accounts/invites',
-            config: { module: 'account', resource: 'invite' },
-            fieldBag: state.invite }, { root: true }).then(function () {
-            commit('CLEAR_INVITE_FORM');
-        });
-    },
-    deleteInvite: function deleteInvite(_ref9, _ref10) {
-        var dispatch = _ref9.dispatch;
-        var id = _ref10.id;
-
-        return dispatch('destroy', { url: '/api/accounts/invites/' + id,
-            config: { module: 'account', resource: 'invites-delete-' + id, noResponse: true }
-        }, { root: true });
-    },
-    resendInvite: function resendInvite(_ref11, _ref12) {
-        var dispatch = _ref11.dispatch;
-        var id = _ref12.id;
-
-        return dispatch('save', { url: '/api/accounts/invites/' + id,
-            config: { module: 'account', resource: 'invites-send-' + id, noResponse: true } }, { root: true });
-    },
-    deactivateUser: function deactivateUser(_ref13, _ref14) {
-        var dispatch = _ref13.dispatch;
-        var id = _ref14.id;
-
-        return dispatch('update', { url: '/api/users/' + id,
-            config: { module: 'account', resource: 'user-activate-' + id, noResponse: true },
-            fieldBag: { 'active': false } }, { root: true });
-    },
-    activateUser: function activateUser(_ref15, _ref16) {
-        var dispatch = _ref15.dispatch;
-        var id = _ref16.id;
-
-        return dispatch('update', { url: '/api/users/' + id,
-            config: { module: 'account', resource: 'user-activate-' + id, noResponse: true },
-            fieldBag: { 'active': true } }, { root: true });
-    },
-    pauseUser: function pauseUser(_ref17, _ref18) {
-        var dispatch = _ref17.dispatch;
-        var id = _ref18.id;
-
-        return dispatch('update', { url: '/api/users/' + id,
-            config: { module: 'account', resource: 'user-pause-' + id, noResponse: true },
-            fieldBag: { 'paused': true } }, { root: true });
-    },
-    unpauseUser: function unpauseUser(_ref19, _ref20) {
-        var dispatch = _ref19.dispatch;
-        var id = _ref20.id;
-
-        return dispatch('update', { url: '/api/users/' + id,
-            config: { module: 'account', resource: 'user-pause-' + id, noResponse: true },
-            fieldBag: { 'paused': false } }, { root: true });
-    },
-    updateUser: function updateUser(_ref21, _ref22) {
-        var dispatch = _ref21.dispatch;
-        var id = _ref22.id,
-            fieldBag = _ref22.fieldBag;
-
-        return dispatch('update', { url: '/api/users/' + id,
-            config: { module: 'account', resource: 'user' },
-            fieldBag: fieldBag }, { root: true });
-    },
-    loadFeaturePlan: function loadFeaturePlan(_ref23, _ref24) {
-        var dispatch = _ref23.dispatch;
-        var id = _ref24.id;
-
-        return dispatch('get', { url: '/api/features/' + id + '/plan', config: { module: 'account', resource: 'featurePlan' } }, { root: true });
-    },
-    buyAddOn: function buyAddOn(_ref25, _ref26) {
-        var dispatch = _ref25.dispatch;
-        var id = _ref26.id;
-
-        return dispatch('save', { url: '/api/features/' + id + '/buy', config: { module: 'account', resource: 'features' } }, { root: true });
-    },
-    updateBillingInformation: function updateBillingInformation(_ref27, token) {
-        var dispatch = _ref27.dispatch;
-
-        return dispatch('update', {
-            url: '/api/accounts/billing/token',
-            config: { module: 'account', resource: 'account' },
-            fieldBag: { token: token }
-        }, { root: true });
-    },
-    loadInvoices: function loadInvoices(_ref28) {
-        var dispatch = _ref28.dispatch;
-
-        return dispatch('get', { url: '/api/accounts/invoices', config: { module: 'account', resource: 'invoices' } }, { root: true });
-    },
-    changeBillingPlanPreview: function changeBillingPlanPreview(_ref29, _ref30) {
-        var dispatch = _ref29.dispatch;
-        var id = _ref30.id;
-
-        return dispatch('get', {
-            url: '/api/features/plans/' + id + '/preview',
-            config: { module: 'account', resource: 'planPreview' },
-            fieldBag: { plan_id: id }
-        }, { root: true });
-    },
-    changeBillingPlan: function changeBillingPlan(_ref31, _ref32) {
-        var dispatch = _ref31.dispatch;
-        var id = _ref32.id;
-
-        return dispatch('update', {
-            url: '/api/accounts/plans',
-            config: { module: 'account', resource: 'account' },
-            fieldBag: { plan_id: id }
-        }, { root: true });
-    },
-    ajaxLogin: function ajaxLogin(_ref33) {
-        var dispatch = _ref33.dispatch,
-            state = _ref33.state;
-
-        return dispatch('save', {
-            url: '/accounts/login',
-            config: { module: 'account', resource: 'login' },
-            fieldBag: { password: state.login.password, email: state.user.email, remember: true }
-        }, { root: true }).then(function (response) {
-            _axios2.default.defaults.headers.common['X-CSRF-TOKEN'] = response.data.csrf;
-            Laravel.csrfToken = response.data.csrf;
-            // update logout form...
-            document.getElementById('logout-form').querySelector('input[name="_token"]').value = response.data.csrf;
-        });
+    setNewResourceInStore: function setNewResourceInStore() {
+        console.log('here');
+        // commit('UPDATE_RESOURCE', {name: 'user', value: state.newResource});
     }
 };
 
 // mutations
-var mutations = {
-    SET_ACCOUNT_STATE: function SET_ACCOUNT_STATE(state, _ref34) {
-        var resource = _ref34.resource,
-            value = _ref34.value;
-
-        state[resource] = value;
-    },
-    SET_DEFAULT_CHANNELS: function SET_DEFAULT_CHANNELS(state, _ref35) {
-        var channels = _ref35.channels;
-
-        state['channels'] = channels;
-    },
-    UPDATE_USER_SETTING: function UPDATE_USER_SETTING(state, _ref36) {
-        var id = _ref36.id,
-            field = _ref36.field,
-            value = _ref36.value;
-
-        var user = _lodash2.default.find(state.users, { id: id });
-
-        if (!user) {
-            _vue2.default.log.error('User setter failed to find user id:', id, field, value);
-        }
-
-        user[field] = value;
-    },
-    ADD_ALERT_TO_BELL: function ADD_ALERT_TO_BELL(state, alert_type) {
-        if (state.bell[alert_type] === undefined) {
-            _vue2.default.set(state.bell, alert_type, 1);
-
-            return;
-        }
-
-        state.bell[alert_type] += 1;
-    },
-    CLEAR_INVITE_FORM: function CLEAR_INVITE_FORM(state) {
-        state.invite = {};
-    }
-};
+var mutations = {};
 
 exports.default = {
     state: state,
@@ -31339,7 +31311,7 @@ exports.default = {
     mutations: mutations
 };
 
-},{"axios":1,"lodash":28,"vue":33}],40:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31562,6 +31534,6 @@ var READ_URL_PARAMETERS = exports.READ_URL_PARAMETERS = function READ_URL_PARAME
     state.url.hash = _queryString2.default.parse(location.hash);
 };
 
-},{"query-string":30,"vue":33}]},{},[35]);
+},{"query-string":30,"vue":34}]},{},[36]);
 
 //# sourceMappingURL=app.js.map

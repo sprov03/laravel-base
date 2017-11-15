@@ -4,19 +4,22 @@
 
 import Vue from 'vue';
 import Vuex from 'vuex';
+import Http from './http.js';
 
 Vue.use(Vuex);
+Vue.use(Http);
 
 import store from './store';
 
 const app = new Vue({
     store,
-    el: 'body',
+    el: '#app',
     components: {
-        usersIndex: require('app/users/index.vue'),
+        usersIndex: require('./components/users/index.vue'),
+        usersCreate: require('./components/users/create.vue'),
     },
     mixins: [],
     created() {
-        console.log.debug('app created');
+        console.log('app created');
     },
 });

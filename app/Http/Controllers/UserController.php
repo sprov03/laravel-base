@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\View;
 use Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -90,5 +91,10 @@ class UserController extends Controller
         $user->delete();
 
         return $user;
+    }
+
+    public function create()
+    {
+        return View::make('models.users.create');
     }
 }

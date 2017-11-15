@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Laravel</title>
+        <title>Base</title>
 
-        <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/css/bootstrap.css">
+        <link rel="stylesheet" href="/css/bootstrap-theme.css">
+        <link rel="stylesheet" href="/css/app.css">
+        <link rel="stylesheet" href="/css/custom.css">
     </head>
     <body>
-        <div class="container">
-            <div class="content">
-                <users-index></users-index>
-            </div>
+        <div id="app" class="container">
+            <users-index></users-index>
         </div>
     </body>
 
