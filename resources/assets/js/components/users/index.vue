@@ -46,7 +46,12 @@
 </template>
 
 <script>
+    import _ from 'lodash';
+    import userModules from '../../store/modules/Users';
+    import axios from 'axios';
+
     export default {
+
         name: 'users',
         data() {
             return {
@@ -56,7 +61,6 @@
                         header: 'Name',
                         column: 'name',
                         link(user) {
-                            return `/api/users/${user.id}`;
                         }
                     },
                     {
@@ -68,16 +72,23 @@
         },
         mixins: [],
         components: {
-            userListRow: require('./user-list-row.vue')
+            userListRow: require('./user-list-row.vue'),
         },
         computed: {
             users() {
-                return this.$store.state.users.data;
+                return this.$store.state.users;
             }
         },
         mounted() {
-            this.$httpGet('users')
-            .then((response) => {this.pageLoaded = true;});
+            Promise.all([
+                this.$httpGet('users'),
+                this.$httpGet('forms'),
+                this.$httpGet('sites'),
+
+            ])
+            .then(() => {
+                this.pageLoaded = true;
+            });
         },
         methods: {
         },

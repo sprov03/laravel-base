@@ -9,6 +9,19 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserController extends Controller
 {
+    public function indexPage()
+    {
+        return View::make('welcome');
+    }
+    public function create()
+    {
+        return View::make('models.users.create');
+    }
+
+
+
+
+
     /**
      * Get all Users
      *
@@ -37,7 +50,7 @@ class UserController extends Controller
      */
     public function show($user_id)
     {
-        return User::findOrFail($user_id);
+        return User::findOrFail($user_id)->load('forms');
     }
 
     /**
@@ -57,7 +70,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update Site User
+     * Update Single User
      *
      * PUT /users/{user_id}
      *
@@ -91,10 +104,5 @@ class UserController extends Controller
         $user->delete();
 
         return $user;
-    }
-
-    public function create()
-    {
-        return View::make('models.users.create');
     }
 }

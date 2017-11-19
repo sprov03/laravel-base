@@ -1,44 +1,63 @@
 let Http = {};
-let axios = require('axios');
+import axios from 'axios';
+import template from 'uri-templates';
+import pluralize from 'pluralize';
 
 Http.install = function (Vue, options) {
     Vue.prototype.$httpGet = function(resource, urlParams, query) {
-        let url = this.$store.state.modules[resource].default.state.url(...(urlParams || []));
+        const url = template(`/api/${pluralize(resource)}{/id}{/action}`).fill(urlParams || {});
 
-        return axios.get(url, query)
+        return axios.get(url, query || {})
             .then((response) => {
-                this.$store.commit('UPDATE_RESOURCE', {name: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
             })
             .catch((response) => {
                 alert(response.data.message);
+
+                throw response;
             });
     };
 
     Vue.prototype.$httpPost = function(resource, urlParams, fieldBag) {
-        let url = this.$store.state.modules[resource].default.state.url(...(urlParams || []));
+        const url = template(`/api/${pluralize(resource)}{/id}{/action}`).fill(urlParams || {});
 
-        return axios.post(url, fieldBag)
+        return axios.post(url, fieldBag || {})
             .then((response) => {
-                this.$store.commit('UPDATE_RESOURCE', {name: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
             })
             .catch((response) => {
                 alert(response.data.message);
+
+                throw response;
             });
     };
 
-    Vue.prototype.$httpPut = function(resource,  fieldBag) {
-        return this.$store.dispatch('update', {
-            'resource': resource,
-            'resource_variables': urlParams,
-            'fieldBag': fieldBag
-        });
+    Vue.prototype.$httpPut = function(resource, urlParams,  fieldBag) {
+        const url = template(`/api/${pluralize(resource)}{/id}{/action}`).fill(urlParams || {});
+
+        return axios.put(url, fieldBag || {})
+            .then((response) => {
+                this.$store.commit('UPDATE_RESOURCE', {resource: this.$store[resource], value: response.data});
+            })
+            .catch((response) => {
+                alert(response.data.message);
+
+                throw response;
+            });
     };
 
-    Vue.prototype.$httpDelete = function(resource) {
-        return this.$store.dispatch('remove', {
-            'resource': resource,
-            'resource_variables': urlParams
-        });
+    Vue.prototype.$httpDelete = function(resource, urlParams) {
+        const url = template(`/api/${pluralize(resource)}{/id}{/action}`).fill(urlParams || {});
+
+        return axios.delete(url)
+            .then((response) => {
+                this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
+            })
+            .catch((response) => {
+                alert(response.data.message);
+
+                throw response;
+            });
     };
 };
 

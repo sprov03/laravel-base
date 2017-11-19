@@ -101,13 +101,13 @@
 //     }
 //
 //     if (config.setter) {
-        console.log('custom setter firing...');
+//         console.log('custom setter firing...');
         // commit(
         //     config.setter.name,
         //     { options: config.setter.options, resourceData: response.data }
         // );
     // } else {
-        console.log('update setter firing...');
+    //     console.log('update setter firing...');
         // commit('UPDATE', { module: config.module, resource: config.resource, resourceData: response.data });
     // }
 // };
@@ -119,7 +119,7 @@
 //
 // export const checkStatus = ({ commit, getters }, { resource }) => {
 //     if (getters.status(resource) === undefined) {
-        console.log('adding status');
+//         console.log('adding status');
         // commit('ADD_STATUS', resource);
     // }
 // };

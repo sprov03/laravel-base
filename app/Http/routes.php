@@ -15,7 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/api/users/index', 'UserController@indexPage');
 Route::resource('/api/users', 'UserController');
+
 Route::resource('/api/forms', 'FormController');
 Route::resource('/api/form_fields', 'FormFieldController');
 Route::resource('/api/form_field_types', 'FormFieldTypeController');

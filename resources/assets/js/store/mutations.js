@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import queryString from 'query-string';
+import _ from 'lodash';
+import uriTemplate from 'uri-templates';
 
 export const UPDATE = (state, { module, resource, field, value, resourceData, defaultValue }) => {
     if (!defaultValue) {
@@ -35,8 +37,10 @@ export const UPDATE = (state, { module, resource, field, value, resourceData, de
     }
 };
 
-export const UPDATE_RESOURCE = (state, { name, value }) => {
-    state[name] = value;
+export const UPDATE_RESOURCE = (state, { resource, value }) => {
+    console.log(resource, value);
+    // resource = value;
+    state[resource] = value;
 };
 
 export const UPDATE_MODULE_RESOURCE = (state, { module, resource, value }) => {
