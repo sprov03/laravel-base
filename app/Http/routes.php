@@ -11,10 +11,6 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::get('/api/users/index', 'UserController@indexPage');
 Route::resource('/api/users', 'UserController');
 
@@ -25,4 +21,22 @@ Route::resource('/api/sites', 'SiteController');
 Route::resource('/api/buying_websites', 'BuyingWebsiteController');
 Route::resource('/api/selling_websites', 'SellingWebsiteController');
 Route::resource('/api/histories', 'HistoryController');
+Route::resource('/api/items', 'ItemController');
 /** Routes File Marker: Do Not Remove Being Used Buy Code Generator */
+
+Route::group([], function () {
+    Route::get('/', function () {
+        return View::make('app.app');
+    });
+
+    Route::resource('items', 'ItemController');
+});
+// Templates
+Route::group(['prefix'=>'/templates/'],function(){
+    Route::get('{template}', [function($template)
+    {
+        $template = str_replace(".html","",$template);
+        View::addExtension('html','php');
+        return View::make('templates.'.$template);
+    }]);
+});

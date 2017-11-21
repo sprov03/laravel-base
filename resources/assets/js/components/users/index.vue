@@ -61,6 +61,7 @@
                         header: 'Name',
                         column: 'name',
                         link(user) {
+                            return '/api/users/' + user.id + '/edit';
                         }
                     },
                     {
@@ -76,7 +77,7 @@
         },
         computed: {
             users() {
-                return this.$store.state.users;
+                return this.$store.state.users.data;
             }
         },
         mounted() {

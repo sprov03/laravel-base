@@ -15,8 +15,10 @@ const app = new Vue({
     store,
     el: '#app',
     components: {
+        /** Page Components **/
         usersIndex: require('./components/users/index.vue'),
         usersCreate: require('./components/users/create.vue'),
+        usersEdit: require('./components/users/edit.vue'),
     },
     mixins: [],
     created() {

@@ -10,7 +10,10 @@ import users from './modules/Users';
 import user from './modules/Users';
 
 export const state = {
-    status: {},
+    status: {
+        user: {},
+        users: {}
+    },
     page: { loading: true, loaded: false, errors: [], message: '' },
     config: require('./config'),
     user: {},

@@ -2,7 +2,7 @@
     <div>
         <div class="row margin-bottom-md">
             <div class="col-12">
-                <h1 class="pull-left">Create User</h1>
+                <h1 class="pull-left">Edit User</h1>
             </div>
         </div>
 
@@ -12,11 +12,10 @@
             </div>
         </div>
 
-        <div v-else class="row">
-            <div class="col-12">
-                <users-form></users-form>
-            </div>
+        <div v-else>
+            <users-form></users-form>
         </div>
+
     </div>
 </template>
 
@@ -35,13 +34,8 @@
             usersForm
         },
         mounted() {
-            let user = {
-                name: '',
-                email: '',
-                password: ''
-            };
-
-            this.$store.commit('UPDATE_RESOURCE', {resource: 'user', value: user});
+            this.$httpGet('user', {id: 5})
+            .then(() => {}, () => {});
         },
     };
 </script>

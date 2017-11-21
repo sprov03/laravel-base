@@ -9,10 +9,27 @@ Http.install = function (Vue, options) {
 
         return axios.get(url, query || {})
             .then((response) => {
+                let status = {
+                    loading: false,
+                    loaded: true,
+                    errors: []
+                };
+
                 this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
+
+                return response;
             })
-            .catch((response) => {
-                alert(response.data.message);
+            .catch((error) => {
+                let response = error.response;
+
+                let status = {
+                    loading: false,
+                    loaded: false,
+                    errors: response.data
+                };
+
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
 
                 throw response;
             });
@@ -23,10 +40,27 @@ Http.install = function (Vue, options) {
 
         return axios.post(url, fieldBag || {})
             .then((response) => {
+                let status = {
+                    loading: false,
+                    loaded: true,
+                    errors: []
+                };
+
                 this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
+
+                return response;
             })
-            .catch((response) => {
-                alert(response.data.message);
+            .catch((error) => {
+                let response = error.response;
+
+                let status = {
+                    loading: false,
+                    loaded: false,
+                    errors: response.data
+                };
+
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
 
                 throw response;
             });
@@ -37,10 +71,27 @@ Http.install = function (Vue, options) {
 
         return axios.put(url, fieldBag || {})
             .then((response) => {
-                this.$store.commit('UPDATE_RESOURCE', {resource: this.$store[resource], value: response.data});
+                let status = {
+                    loading: false,
+                    loaded: true,
+                    errors: []
+                };
+
+                this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
+
+                return response;
             })
-            .catch((response) => {
-                alert(response.data.message);
+            .catch((error) => {
+                let response = error.response;
+
+                let status = {
+                    loading: false,
+                    loaded: false,
+                    errors: response.data
+                };
+
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
 
                 throw response;
             });
@@ -51,10 +102,27 @@ Http.install = function (Vue, options) {
 
         return axios.delete(url)
             .then((response) => {
+                let status = {
+                    loading: false,
+                    loaded: true,
+                    errors: []
+                };
+
                 this.$store.commit('UPDATE_RESOURCE', {resource: resource, value: response.data});
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
+
+                return response;
             })
-            .catch((response) => {
-                alert(response.data.message);
+            .catch((error) => {
+                let response = error.response;
+
+                let status = {
+                    loading: false,
+                    loaded: false,
+                    errors: response.data
+                };
+
+                this.$store.commit('UPDATE_RESOURCE_STATUS', {resource: resource, value: status});
 
                 throw response;
             });

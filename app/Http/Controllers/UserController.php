@@ -17,6 +17,12 @@ class UserController extends Controller
     {
         return View::make('models.users.create');
     }
+    public function edit($user_id)
+    {
+        $user = User::findOrFail($user_id);
+
+        return View::make('models.users.edit', compact('user'));
+    }
 
 
 
@@ -81,7 +87,7 @@ class UserController extends Controller
      */
     public function update($user_id, Request $request)
     {
-        $this->validate($request, User::rules());
+        $this->validate($request, User::rules($user_id));
 
         $user = User::findOrFail($user_id);
         $user->update($request->all());

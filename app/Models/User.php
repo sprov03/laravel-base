@@ -38,17 +38,19 @@ class User extends BaseModel
     }
 
     /**
-    * Returns Dynamic Model Rules If necessary
-    *
-    * @return array
-    */
-    public static function rules()
+     * Returns Dynamic Model Rules If necessary
+     *
+     * @param integer $user_id
+     *
+     * @return array
+     */
+    public static function rules($user_id = null)
     {
         return [
             'name' => 'required|max:255',
-            'email' => 'required|max:255',
+            'email' => 'required|min:5|max:255|email|unique:users,email,' . $user_id,
             'password' => 'required|max:255',
-            'remember_token' => 'required|max:100',
+            // 'remember_token' => 'required|max:100',
         ];
     }
 

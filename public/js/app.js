@@ -33321,8 +33321,10 @@ var app = new _vue2.default({
     store: _store2.default,
     el: '#app',
     components: {
+        /** Page Components **/
         usersIndex: require('./components/users/index.vue'),
-        usersCreate: require('./components/users/create.vue')
+        usersCreate: require('./components/users/create.vue'),
+        usersEdit: require('./components/users/edit.vue')
     },
     mixins: [],
     created: function created() {
@@ -33330,7 +33332,115 @@ var app = new _vue2.default({
     }
 });
 
-},{"./components/users/create.vue":111,"./components/users/index.vue":112,"./http.js":114,"./store":116,"vue":106,"vuex":107}],109:[function(require,module,exports){
+},{"./components/users/create.vue":112,"./components/users/edit.vue":113,"./components/users/index.vue":115,"./http.js":117,"./store":119,"vue":106,"vuex":107}],109:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+    data: function data() {
+        return {
+            classSet: {
+                save: {
+                    ready: 'btn btn-primary',
+                    pending: 'btn btn-primary',
+                    success: 'btn btn-success',
+                    error: 'btn btn-danger'
+                },
+                delete: {
+                    ready: 'btn btn-danger',
+                    pending: 'btn btn-warning',
+                    success: 'btn btn-success',
+                    error: 'btn btn-danger'
+                }
+            },
+            status: 'ready'
+        };
+    },
+    props: {
+        labels: {
+            type: Object,
+            default: function _default() {
+                return {
+                    ready: 'Save',
+                    pending: 'Saving...',
+                    success: 'Saved',
+                    error: 'Error Saving'
+                };
+            }
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+        onClick: {
+            required: true,
+            type: Function
+        },
+        action: {
+            required: true,
+            type: String,
+            default: 'save'
+        }
+    },
+    computed: {
+        needsConfirmation: function needsConfirmation() {
+            return this.confirmationMessage;
+        },
+        classes: function classes() {
+            if (this.disabled) {
+                return 'btn btn-disabled';
+            }
+
+            return this.classSet[this.action][this.status];
+        },
+        isDisabled: function isDisabled() {
+            return this.disabled || !this.status === 'ready';
+        },
+        isLoading: function isLoading() {
+            return this.status === 'pending';
+        },
+        buttonLabel: function buttonLabel() {
+            return this.labels[this.status];
+        }
+    },
+    methods: {
+        clicked: function clicked() {
+            if (this.needsConfirmation) {
+                this.confirm();
+
+                return;
+            }
+
+            this.process();
+        },
+        reset: function reset() {
+            this.status = 'ready';
+        },
+        process: function process() {
+            var _this = this;
+
+            this.status = 'pending';
+
+            this.onClick().then(function (response) {
+                _this.status = 'success';
+            }).catch(function (error) {
+                _this.status = 'error';
+            });
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<button :class=\"classes\" @click=\"clicked\" :disabled=\"isDisabled\"><span :class=\"{ 'fa fa-spinner fa-spin': isLoading}\"></span>\n    {{ buttonLabel }}\n</button>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-53990c9b", module.exports)
+  } else {
+    hotAPI.update("_v-53990c9b", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":106,"vue-hot-reload-api":105}],110:[function(require,module,exports){
 'use strict';
 
 var _inputField = require('./input-field.vue');
@@ -33340,13 +33450,36 @@ var _inputField2 = _interopRequireDefault(_inputField);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
-    props: ['resource', 'setResource', 'property', 'label', 'type', 'placeholder'],
+    props: ['resource', 'setResource', 'resourceStatus', 'property', 'label', 'type', 'placeholder'],
     components: {
         inputField: _inputField2.default
+    },
+    watch: {
+        'thisProperty': {
+            handler: function handler(newValue, oldValue) {
+                if (this.hasError) {
+                    this.resourceStatus.errors[this.property] = undefined;
+                    delete this.resourceStatus.errors[this.property];
+                }
+            }
+        }
+    },
+    computed: {
+        hasError: function hasError() {
+            if (!this.resourceStatus || !this.resourceStatus.errors) {
+                return false;
+            }
+
+            return this.resourceStatus.errors[this.property] ? true : false;
+        },
+        thisProperty: function thisProperty() {
+            return this.resource[this.property];
+        }
     }
+
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"form-group\">\n    <label v-if=\"label\">{{label}}</label>\n    <input-field :resource=\"resource\" :set-resource=\"setResource\" :property=\"property\" :type=\"type\" :placeholder=\"placeholder\"></input-field>\n    <slot></slot>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"form-group\" :class=\"{'is-invalid': hasError}\">\n    <label v-if=\"label\" :class=\"{'text-danger': hasError}\">{{label}}</label>\n    <input-field :class=\"{'is-invalid': hasError}\" :resource=\"resource\" :set-resource=\"setResource\" :property=\"property\" :type=\"type || 'text'\" :placeholder=\"placeholder || ''\"></input-field>\n    <div v-if=\"hasError\">\n        <div class=\"text-danger\" v-for=\"error in resourceStatus.errors[property]\">{{error}}</div>\n    </div>\n    <slot></slot>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33357,14 +33490,14 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-0babc774", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./input-field.vue":110,"vue":106,"vue-hot-reload-api":105}],110:[function(require,module,exports){
+},{"./input-field.vue":111,"vue":106,"vue-hot-reload-api":105}],111:[function(require,module,exports){
 'use strict';
 
 module.exports = {
     props: ['resource', 'setResource', 'property', 'type', 'placeholder'],
     methods: {
         getResource: function getResource(property) {
-            return this.$store.state.user[property];
+            return this.resource[property];
         },
         callSetResource: function callSetResource(event) {
             this.setResource(this.property, event.target.value);
@@ -33372,7 +33505,7 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<input @input=\"callSetResource\" :value=\"getResource(property)\" type=\"type ||'text'\" class=\"form-control\" placeholder=\"placeholder\">\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<input @input=\"callSetResource\" :value=\"getResource(property)\" type=\"type ||'text'\" class=\"form-control\" :placeholder=\"placeholder\">\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33383,20 +33516,16 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-aebd1bda", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":106,"vue-hot-reload-api":105}],111:[function(require,module,exports){
+},{"vue":106,"vue-hot-reload-api":105}],112:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _axios = require('axios');
+var _form = require('./form.vue');
 
-var _axios2 = _interopRequireDefault(_axios);
-
-var _basicInputField = require('../general/forms/basic-input-field.vue');
-
-var _basicInputField2 = _interopRequireDefault(_basicInputField);
+var _form2 = _interopRequireDefault(_form);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33410,36 +33539,20 @@ exports.default = {
 
     mixins: [],
     components: {
-        basicInputField: _basicInputField2.default
-    },
-    computed: {
-        user: function user() {
-            return this.$store.state.user;
-        },
-        forms: function forms() {
-            return this.$store.state.user.forms;
-        }
+        usersForm: _form2.default
     },
     mounted: function mounted() {
-        // this.$httpGet('users');
-        this.$httpGet('user', { id: 5 });
-        // this.$httpGet('sites');
-        // this.$httpGet('site', {id: 5});
-        // this.$httpGet('forms');
-        // this.$httpGet('form', {id: 5});
-    },
+        var user = {
+            name: '',
+            email: '',
+            password: ''
+        };
 
-    methods: {
-        addForm: function addForm() {
-            this.$httpGet('user', { id: this.user.id + 1 });
-        },
-        setUserProperty: function setUserProperty(property, value) {
-            this.$store.commit('UPDATE_MODULE_RESOURCE', { module: 'user', resource: property, value: value });
-        }
+        this.$store.commit('UPDATE_RESOURCE', { resource: 'user', value: user });
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Create User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n            <!--<loading-and-errors loading-message=\"Loading Products...\"></loading-and-errors>-->\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-12\">\n            <basic-input-field :resource=\"user\" :set-resource=\"setUserProperty\" property=\"name\" label=\"Name\"></basic-input-field>\n            <basic-input-field :resource=\"user\" :set-resource=\"setUserProperty\" property=\"email\" label=\"Email\"></basic-input-field>\n            <basic-input-field :resource=\"user\" :set-resource=\"setUserProperty\" property=\"password\" label=\"Password\"></basic-input-field>\n        </div>\n    </div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Create User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-12\">\n            <users-form></users-form>\n        </div>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33450,7 +33563,117 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-24339090", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../general/forms/basic-input-field.vue":109,"axios":1,"vue":106,"vue-hot-reload-api":105}],112:[function(require,module,exports){
+},{"./form.vue":114,"vue":106,"vue-hot-reload-api":105}],113:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _form = require('./form.vue');
+
+var _form2 = _interopRequireDefault(_form);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+    name: 'user',
+    data: function data() {
+        return {
+            pageLoaded: true
+        };
+    },
+
+    mixins: [],
+    components: {
+        usersForm: _form2.default
+    },
+    mounted: function mounted() {
+        this.$httpGet('user', { id: 5 }).then(function () {}, function () {});
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Edit User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n        </div>\n    </div>\n\n    <div v-else=\"\">\n        <users-form></users-form>\n    </div>\n\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-3216b59e", module.exports)
+  } else {
+    hotAPI.update("_v-3216b59e", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./form.vue":114,"vue":106,"vue-hot-reload-api":105}],114:[function(require,module,exports){
+'use strict';
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _vueButton = require('../general/buttons/vue-button.vue');
+
+var _vueButton2 = _interopRequireDefault(_vueButton);
+
+var _basicInputField = require('../general/forms/basic-input-field.vue');
+
+var _basicInputField2 = _interopRequireDefault(_basicInputField);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = {
+    components: {
+        basicInputField: _basicInputField2.default,
+        vueButton: _vueButton2.default
+    },
+    computed: {
+        user: function user() {
+            return this.$store.state.user;
+        },
+        userStatus: function userStatus() {
+            return this.$store.state.status.user;
+        }
+    },
+    methods: {
+        saveUser: function saveUser() {
+            if (this.user.id) {
+                return this.$httpPut('user', { id: this.user.id }, this.user);
+            } else {
+                return this.$httpPost('user', {}, this.user);
+            }
+        },
+        setUserProperty: function setUserProperty(property, value) {
+            this.$store.commit('UPDATE_MODULE_RESOURCE', { module: 'user', resource: property, value: value });
+        }
+    },
+    watch: {
+        'user': {
+            handler: function handler() {
+                var _this = this;
+
+                this.$nextTick(function () {
+                    if (_lodash2.default.isEmpty(_this.$store.state.status.user.errors)) {
+                        _this.$refs.updateUserButton.reset();
+                    }
+                });
+            },
+            deep: true
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <basic-input-field property=\"name\" label=\"Name\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n    <basic-input-field property=\"email\" label=\"Email\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n    <basic-input-field property=\"password\" label=\"Password\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n\n    <vue-button class=\"pull-right\" :on-click=\"saveUser\" action=\"save\" ref=\"updateUserButton\"></vue-button>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-22553150", module.exports)
+  } else {
+    hotAPI.update("_v-22553150", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../general/buttons/vue-button.vue":109,"../general/forms/basic-input-field.vue":110,"lodash":98,"vue":106,"vue-hot-reload-api":105}],115:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33484,7 +33707,9 @@ exports.default = {
             columns: [{
                 header: 'Name',
                 column: 'name',
-                link: function link(user) {}
+                link: function link(user) {
+                    return '/api/users/' + user.id + '/edit';
+                }
             }, {
                 header: 'Email',
                 column: 'email'
@@ -33498,7 +33723,7 @@ exports.default = {
     },
     computed: {
         users: function users() {
-            return this.$store.state.users;
+            return this.$store.state.users.data;
         }
     },
     mounted: function mounted() {
@@ -33523,7 +33748,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-5277b7ee", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../../store/modules/Users":118,"./user-list-row.vue":113,"axios":1,"babel-runtime/core-js/promise":26,"lodash":98,"vue":106,"vue-hot-reload-api":105}],113:[function(require,module,exports){
+},{"../../store/modules/Users":121,"./user-list-row.vue":116,"axios":1,"babel-runtime/core-js/promise":26,"lodash":98,"vue":106,"vue-hot-reload-api":105}],116:[function(require,module,exports){
 'use strict';
 
 // import lpButton from 'app/components/lp-button.vue';
@@ -33554,7 +33779,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-79fcd189", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":106,"vue-hot-reload-api":105}],114:[function(require,module,exports){
+},{"vue":106,"vue-hot-reload-api":105}],117:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33585,9 +33810,26 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.get(url, query || {}).then(function (response) {
+            var status = {
+                loading: false,
+                loaded: true,
+                errors: []
+            };
+
             _this.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-        }).catch(function (response) {
-            alert(response.data.message);
+            _this.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+
+            return response;
+        }).catch(function (error) {
+            var response = error.response;
+
+            var status = {
+                loading: false,
+                loaded: false,
+                errors: response.data
+            };
+
+            _this.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
 
             throw response;
         });
@@ -33599,9 +33841,26 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.post(url, fieldBag || {}).then(function (response) {
+            var status = {
+                loading: false,
+                loaded: true,
+                errors: []
+            };
+
             _this2.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-        }).catch(function (response) {
-            alert(response.data.message);
+            _this2.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+
+            return response;
+        }).catch(function (error) {
+            var response = error.response;
+
+            var status = {
+                loading: false,
+                loaded: false,
+                errors: response.data
+            };
+
+            _this2.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
 
             throw response;
         });
@@ -33613,9 +33872,26 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.put(url, fieldBag || {}).then(function (response) {
-            _this3.$store.commit('UPDATE_RESOURCE', { resource: _this3.$store[resource], value: response.data });
-        }).catch(function (response) {
-            alert(response.data.message);
+            var status = {
+                loading: false,
+                loaded: true,
+                errors: []
+            };
+
+            _this3.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
+            _this3.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+
+            return response;
+        }).catch(function (error) {
+            var response = error.response;
+
+            var status = {
+                loading: false,
+                loaded: false,
+                errors: response.data
+            };
+
+            _this3.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
 
             throw response;
         });
@@ -33627,9 +33903,26 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.delete(url).then(function (response) {
+            var status = {
+                loading: false,
+                loaded: true,
+                errors: []
+            };
+
             _this4.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-        }).catch(function (response) {
-            alert(response.data.message);
+            _this4.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+
+            return response;
+        }).catch(function (error) {
+            var response = error.response;
+
+            var status = {
+                loading: false,
+                loaded: false,
+                errors: response.data
+            };
+
+            _this4.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
 
             throw response;
         });
@@ -33640,7 +33933,7 @@ exports.default = Http; /**
                         * Created by shawnpivonka on 11/14/17.
                         */
 
-},{"axios":1,"pluralize":99,"uri-templates":104}],115:[function(require,module,exports){
+},{"axios":1,"pluralize":99,"uri-templates":104}],118:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -33648,7 +33941,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = {};
 
-},{}],116:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33685,7 +33978,10 @@ _vue2.default.use(_vuex2.default);
 // import * as actions from './actions';
 /* eslint-disable no-shadow */
 var state = exports.state = {
-    status: {},
+    status: {
+        user: {},
+        users: {}
+    },
     page: { loading: true, loaded: false, errors: [], message: '' },
     config: require('./config'),
     user: {},
@@ -33715,7 +34011,7 @@ exports.default = new _vuex2.default.Store({
     getters: getters
 });
 
-},{"./config":115,"./modules/Users":118,"./mutations":119,"lodash":98,"vue":106,"vuex":107}],117:[function(require,module,exports){
+},{"./config":118,"./modules/Users":121,"./mutations":122,"lodash":98,"vue":106,"vuex":107}],120:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -33744,7 +34040,7 @@ exports.default = {
     actions: actions
 };
 
-},{}],118:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33775,13 +34071,12 @@ var namespaced = true;
 var _state = {
     user: {
         forms: []
-    }
+    },
+    errors: []
 };
 
 var getters = exports.getters = {};
-var actions = exports.actions = {
-    initializeModule: function initializeModule() {}
-};
+var actions = exports.actions = {};
 var mutations = exports.mutations = {};
 
 exports.default = {
@@ -33795,13 +34090,13 @@ exports.default = {
     mutations: mutations
 };
 
-},{"./Forms":117,"axios":1,"lodash":98,"uri-templates":104}],119:[function(require,module,exports){
+},{"./Forms":120,"axios":1,"lodash":98,"uri-templates":104}],122:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.READ_URL_PARAMETERS = exports.ADD_MODAL = exports.ADD_ALERT = exports.SET_SETTINGS_STYLE = exports.SET_BREADCRUMBS = exports.SET_PAGE_MESSAGE = exports.SET_PAGE_STATUS = exports.SET_STATUS = exports.ADD_STATUS = exports.UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_FIELD = exports.CLEAR_RESOURCE = exports.PUSH_INTO_RESOURCE = exports.ADD_PROPERTY_TO_STORE = exports.UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_RESOURCE = exports.UPDATE_RESOURCE = exports.UPDATE = undefined;
+exports.READ_URL_PARAMETERS = exports.ADD_MODAL = exports.ADD_ALERT = exports.SET_SETTINGS_STYLE = exports.SET_BREADCRUMBS = exports.SET_PAGE_MESSAGE = exports.SET_PAGE_STATUS = exports.SET_STATUS = exports.ADD_STATUS = exports.UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_FIELD = exports.CLEAR_RESOURCE = exports.PUSH_INTO_RESOURCE = exports.ADD_PROPERTY_TO_STORE = exports.UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_RESOURCE = exports.UPDATE_RESOURCE_STATUS = exports.UPDATE_RESOURCE = exports.UPDATE = undefined;
 
 var _vue = require('vue');
 
@@ -33866,24 +34161,29 @@ var UPDATE_RESOURCE = exports.UPDATE_RESOURCE = function UPDATE_RESOURCE(state, 
     var resource = _ref2.resource,
         value = _ref2.value;
 
-    console.log(resource, value);
-    // resource = value;
     state[resource] = value;
 };
 
-var UPDATE_MODULE_RESOURCE = exports.UPDATE_MODULE_RESOURCE = function UPDATE_MODULE_RESOURCE(state, _ref3) {
-    var module = _ref3.module,
-        resource = _ref3.resource,
+var UPDATE_RESOURCE_STATUS = exports.UPDATE_RESOURCE_STATUS = function UPDATE_RESOURCE_STATUS(state, _ref3) {
+    var resource = _ref3.resource,
         value = _ref3.value;
+
+    state.status[resource] = value;
+};
+
+var UPDATE_MODULE_RESOURCE = exports.UPDATE_MODULE_RESOURCE = function UPDATE_MODULE_RESOURCE(state, _ref4) {
+    var module = _ref4.module,
+        resource = _ref4.resource,
+        value = _ref4.value;
 
     state[module][resource] = value;
 };
 
-var UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_FIELD = function UPDATE_MODULE_FIELD(state, _ref4) {
-    var module = _ref4.module,
-        resource = _ref4.resource,
-        field = _ref4.field,
-        value = _ref4.value;
+var UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_FIELD = function UPDATE_MODULE_FIELD(state, _ref5) {
+    var module = _ref5.module,
+        resource = _ref5.resource,
+        field = _ref5.field,
+        value = _ref5.value;
 
     if (state[module][resource][field] === undefined) {
         _vue2.default.set(state[module][resource], field, value);
@@ -33894,57 +34194,57 @@ var UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_FIELD = function UPDATE_MODULE_F
     state[module][resource][field] = value;
 };
 
-var UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = function UPDATE_SUBRESOURCE_BY_INDEX(state, _ref5) {
-    var module = _ref5.module,
-        resource = _ref5.resource,
-        field = _ref5.field,
-        index = _ref5.index,
-        sub_field = _ref5.sub_field,
-        value = _ref5.value;
+var UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = function UPDATE_SUBRESOURCE_BY_INDEX(state, _ref6) {
+    var module = _ref6.module,
+        resource = _ref6.resource,
+        field = _ref6.field,
+        index = _ref6.index,
+        sub_field = _ref6.sub_field,
+        value = _ref6.value;
 
     state[module][resource][field][index][sub_field] = value;
 };
 
-var UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_RESOURCE_BY_INDEX = function UPDATE_RESOURCE_BY_INDEX(state, _ref6) {
-    var module = _ref6.module,
-        resource = _ref6.resource,
-        index = _ref6.index,
-        field = _ref6.field,
-        value = _ref6.value;
+var UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_RESOURCE_BY_INDEX = function UPDATE_RESOURCE_BY_INDEX(state, _ref7) {
+    var module = _ref7.module,
+        resource = _ref7.resource,
+        index = _ref7.index,
+        field = _ref7.field,
+        value = _ref7.value;
 
     state[module][resource][index][field] = value;
 };
 
-var ADD_PROPERTY_TO_STORE = exports.ADD_PROPERTY_TO_STORE = function ADD_PROPERTY_TO_STORE(state, _ref7) {
-    var module = _ref7.module,
-        resource = _ref7.resource,
-        field = _ref7.field,
-        initialValue = _ref7.initialValue;
+var ADD_PROPERTY_TO_STORE = exports.ADD_PROPERTY_TO_STORE = function ADD_PROPERTY_TO_STORE(state, _ref8) {
+    var module = _ref8.module,
+        resource = _ref8.resource,
+        field = _ref8.field,
+        initialValue = _ref8.initialValue;
 
     _vue2.default.log.debug('add property to store');
     var value = initialValue || '';
     _vue2.default.set(state[module][resource], field, value);
 };
 
-var PUSH_INTO_RESOURCE = exports.PUSH_INTO_RESOURCE = function PUSH_INTO_RESOURCE(state, _ref8) {
-    var module = _ref8.module,
-        resource = _ref8.resource,
-        value = _ref8.value;
+var PUSH_INTO_RESOURCE = exports.PUSH_INTO_RESOURCE = function PUSH_INTO_RESOURCE(state, _ref9) {
+    var module = _ref9.module,
+        resource = _ref9.resource,
+        value = _ref9.value;
 
     state[module][resource].push(value);
 };
 
-var CLEAR_RESOURCE = exports.CLEAR_RESOURCE = function CLEAR_RESOURCE(state, _ref9) {
-    var module = _ref9.module,
-        resource = _ref9.resource;
+var CLEAR_RESOURCE = exports.CLEAR_RESOURCE = function CLEAR_RESOURCE(state, _ref10) {
+    var module = _ref10.module,
+        resource = _ref10.resource;
 
     _vue2.default.set(state[module], resource, {});
 };
 
-var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_FIELD(state, _ref10) {
-    var path = _ref10.path,
-        field = _ref10.field,
-        value = _ref10.value;
+var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_FIELD(state, _ref11) {
+    var path = _ref11.path,
+        field = _ref11.field,
+        value = _ref11.value;
 
     var reference = path.split('.').reduce(function (obj, index) {
         return obj[index];
@@ -33956,9 +34256,9 @@ var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_F
     }
 };
 
-var UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_RESOURCE = function UPDATE_LOOKUP_RESOURCE(state, _ref11) {
-    var path = _ref11.path,
-        value = _ref11.value;
+var UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_RESOURCE = function UPDATE_LOOKUP_RESOURCE(state, _ref12) {
+    var path = _ref12.path,
+        value = _ref12.value;
 
     var reference = path.split('.').reduce(function (obj, index) {
         return obj[index];
@@ -33971,21 +34271,21 @@ var ADD_STATUS = exports.ADD_STATUS = function ADD_STATUS(state, resource) {
     _vue2.default.set(state.status, resource, { loading: false, loaded: false, errors: [] });
 };
 
-var SET_STATUS = exports.SET_STATUS = function SET_STATUS(state, _ref12) {
-    var resource = _ref12.resource,
-        loading = _ref12.loading,
-        loaded = _ref12.loaded,
-        errors = _ref12.errors;
+var SET_STATUS = exports.SET_STATUS = function SET_STATUS(state, _ref13) {
+    var resource = _ref13.resource,
+        loading = _ref13.loading,
+        loaded = _ref13.loaded,
+        errors = _ref13.errors;
 
     state.status[resource].loading = loading !== undefined ? loading : state.status[resource].loading;
     state.status[resource].loaded = loaded !== undefined ? loaded : state.status[resource].loaded;
     state.status[resource].errors = errors !== undefined ? errors : state.status[resource].errors;
 };
 
-var SET_PAGE_STATUS = exports.SET_PAGE_STATUS = function SET_PAGE_STATUS(state, _ref13) {
-    var loading = _ref13.loading,
-        loaded = _ref13.loaded,
-        errors = _ref13.errors;
+var SET_PAGE_STATUS = exports.SET_PAGE_STATUS = function SET_PAGE_STATUS(state, _ref14) {
+    var loading = _ref14.loading,
+        loaded = _ref14.loaded,
+        errors = _ref14.errors;
 
     state.page.loading = loading !== undefined ? loading : state.page.loading;
     state.page.loaded = loaded !== undefined ? loaded : state.page.loaded;
@@ -33997,18 +34297,18 @@ var SET_PAGE_MESSAGE = exports.SET_PAGE_MESSAGE = function SET_PAGE_MESSAGE(stat
     state.page.message = message;
 };
 
-var SET_BREADCRUMBS = exports.SET_BREADCRUMBS = function SET_BREADCRUMBS(state, _ref14) {
-    var links = _ref14.links,
-        settings = _ref14.settings;
+var SET_BREADCRUMBS = exports.SET_BREADCRUMBS = function SET_BREADCRUMBS(state, _ref15) {
+    var links = _ref15.links,
+        settings = _ref15.settings;
 
     state.breadcrumbs.links = links;
     state.breadcrumbs.settings = settings;
 };
 
-var SET_SETTINGS_STYLE = exports.SET_SETTINGS_STYLE = function SET_SETTINGS_STYLE(state, _ref15) {
-    var icon_class = _ref15.icon_class,
-        button_class = _ref15.button_class,
-        label = _ref15.label;
+var SET_SETTINGS_STYLE = exports.SET_SETTINGS_STYLE = function SET_SETTINGS_STYLE(state, _ref16) {
+    var icon_class = _ref16.icon_class,
+        button_class = _ref16.button_class,
+        label = _ref16.label;
 
     state.breadcrumbs.settings.icon_class = icon_class;
     state.breadcrumbs.settings.button_class = button_class;

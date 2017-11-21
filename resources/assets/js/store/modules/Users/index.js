@@ -8,13 +8,12 @@ const namespaced = true;
 const state = {
     user: {
         forms: []
-    }
+    },
+    errors: []
 };
 
 export const getters = {};
 export const actions = {
-    initializeModule() {
-    }
 };
 export const mutations = {};
 

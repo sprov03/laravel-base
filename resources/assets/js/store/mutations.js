@@ -38,9 +38,11 @@ export const UPDATE = (state, { module, resource, field, value, resourceData, de
 };
 
 export const UPDATE_RESOURCE = (state, { resource, value }) => {
-    console.log(resource, value);
-    // resource = value;
     state[resource] = value;
+};
+
+export const UPDATE_RESOURCE_STATUS = (state, { resource, value }) => {
+    state.status[resource] = value;
 };
 
 export const UPDATE_MODULE_RESOURCE = (state, { module, resource, value }) => {
