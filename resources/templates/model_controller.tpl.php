@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use [[namespace]]\[[model]];
+use Illuminate\Support\Facades\View;
+use [[namespace]]\[[ModelName]];
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class [[model]]Controller extends Controller
+class [[ModelName]]Controller extends Controller
 {
     /**
-     * Get all [[model_name_studly_case_plural]]
+     * Get all [[ModelNames]]
      *
-     * GET /[[model_name_snake_case_plural]]
+     * GET /[[model_names]]
      *
      * @param Request $request
      *
@@ -19,76 +20,84 @@ class [[model]]Controller extends Controller
      */
     public function index(Request $request)
     {
-        $columns = [];
-
-        return [[model]]::search($request, $columns)
-            ->paginate($request->input('page_size', 50));
+        return View::make('models.[[model_names]].index', ['[[model_names]]' => [[ModelName]]::all()]);
     }
 
     /**
-     * Get Single [[model_name_studly_case_singular]]
+     * Get [[ModelName]] Create Page
      *
-     * GET /[[model_name_snake_case_plural]]/{[[model_name_snake_case_singular]]_id}
-     *
-     * @param $[[model_name_snake_case_singular]]_id
-     *
-     * @return [[model]]
+     * @return \Illuminate\Contracts\View\View
      */
-    public function show($[[model_name_snake_case_singular]]_id)
+    public function create()
     {
-        return [[model]]::findOrFail($[[model_name_snake_case_singular]]_id);
+        return View::make('models.[[model_names]].create');
+    }
+
+    /**
+     * Get [[ModelName]] Edit Page
+     *
+     * @param $[[model_name]]_id
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function edit($[[model_name]]_id)
+    {
+        return View::make('models.[[model_names]].edit', ['[[model_name]]' => [[ModelName]]::findOrFail($[[model_name]]_id)]);
     }
 
     /**
      * Create Single [[model_name_studly_case_singular]]
      *
-     * POST /[[model_name_snake_case_plural]]
+     * POST /[[model_names]]
      *
      * @param Request $request
      *
-     * @return [[model]]
+     * @return [[ModelName]]
      */
     public function store(Request $request)
     {
-        $this->validate($request, [[model]]::rules());
+        $this->validate($request, [[ModelName]]::rules());
+        $[[modelName]] = [[ModelName]]::create($request->all());
 
-        return [[model]]::create($request->all());
+        return View::make('models.[[model_names]].edit', ['[[modelName]]' => $[[modelName]]]);
     }
 
     /**
      * Update Site [[model_name_studly_case_singular]]
      *
-     * PUT /[[model_name_snake_case_plural]]/{[[model_name_snake_case_singular]]_id}
+     * PUT /[[model_names]]/{[[ModelName]]_id}/update
      *
-     * @param $[[model_name_snake_case_singular]]_id [[model]] id
+     * @param $[[model_name]]_id [[ModelName]] id
      * @param Request $request
      *
-     * @return [[model]]
+     * @return [[ModelName]]
      */
-    public function update($[[model_name_snake_case_singular]]_id, Request $request)
+    public function update($[[model_name]]_id, Request $request)
     {
-        $this->validate($request, [[model]]::rules());
+        $this->validate($request, [[ModelName]]::rules());
 
-        $[[model_name_snake_case_singular]] = [[model]]::findOrFail($[[model_name_snake_case_singular]]_id);
-        $[[model_name_snake_case_singular]]->update($request->all());
+        $[[modelName]] = [[ModelName]]::findOrFail($[[model_name]]_id);
+        $[[modelName]]->update($request->all());
 
-        return $[[model_name_snake_case_singular]];
+        return View::make('models.[[model_names]].edit', ['[[model_name]]' => $[[modelName]]]);
     }
 
-    /**
-     * Destroy [[model_name_studly_case_singular]]
-     *
-     * DELETE /[[model_name_snake_case_plural]]/{[[model_name_snake_case_singular]]_id}
-     *
-     * @param $[[model_name_snake_case_singular]]_id
-     *
-     * @return [[model]]
-     */
-    public function destroy($[[model_name_snake_case_singular]]_id)
-    {
-        $[[model_name_snake_case_singular]] = [[model]]::findOrFail($[[model_name_snake_case_singular]]_id);
-        $[[model_name_snake_case_singular]]->delete();
 
-        return $[[model_name_snake_case_singular]];
+    /**
+     * Delete [[ModelName]]
+     * Not best practice but simple delete with link instead of a form
+     *
+     * Get /[[model_names]]/{[[ModelName]]_id}/delete
+     *
+     * @param $[[model_name]]_id
+     *
+     * @return View
+     */
+    public function delete($[[model_name]]_id)
+    {
+        $[[ModelName]] = [[ModelName]]::findOrFail($[[model_name]]_id);
+        $[[ModelName]]->delete();
+
+        return View::make('models.[[model_names]].index', ['[[model_names]]' => [[ModelName]]::all()]);
     }
 }

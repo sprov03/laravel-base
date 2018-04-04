@@ -3,16 +3,16 @@
 namespace Tests\App\Http\Controllers;
 
 use Tests\TestCase;
-use [[namespace]]\[[model]];
+use [[namespace]]\[[ModelName]];
 
-class [[model]]ControllerTest extends TestCase
+class [[ModelName]]ControllerTest extends TestCase
 {
     /**
      * @test
      */
     public function index()
     {
-        $this->get("/[[model_name_snake_case_plural]]");
+        $this->get("/[[model_names]]");
 
         $this->assertResponseOk();
 
@@ -35,9 +35,9 @@ class [[model]]ControllerTest extends TestCase
      */
     public function show()
     {
-        $[[model_name_snake_case_singular]] = [[model]]::first();
+        $[[model_name]] = [[ModelName]]::first();
 
-        $this->get("/[[model_name_snake_case_plural]]/{$[[model_name_snake_case_singular]]->id}");
+        $this->get("/[[model_names]]/{$[[model_name]]->id}");
 
         $this->assertResponseOk();
         $this->seeJsonStructure([
@@ -58,7 +58,7 @@ class [[model]]ControllerTest extends TestCase
 <?php endforeach; ?>
         ];
 
-        $this->post("/[[model_name_snake_case_plural]]", $request);
+        $this->post("/[[model_names]]", $request);
         $this->assertResponseOk();
 
         $this->seeJsonStructure([
@@ -78,7 +78,7 @@ class [[model]]ControllerTest extends TestCase
      */
     public function update()
     {
-        $[[model_name_snake_case_singular]] = [[model]]::first();
+        $[[model_name]] = [[ModelName]]::first();
 
         $request = [
 <?php foreach ($columns as $column): ?>
@@ -86,7 +86,7 @@ class [[model]]ControllerTest extends TestCase
 <?php endforeach; ?>
         ];
 
-        $this->put("/[[model_name_snake_case_plural]]/{$[[model_name_snake_case_singular]]->id}", $request);
+        $this->put("/[[model_names]]/{$[[model_name]]->id}", $request);
         $this->assertResponseOk();
 
         $this->seeJsonStructure([
@@ -106,12 +106,12 @@ class [[model]]ControllerTest extends TestCase
      */
     public function destroy()
     {
-        $[[model_name_snake_case_singular]] = [[model]]::first();
+        $[[model_name]] = [[ModelName]]::first();
 
-        $this->delete("/[[model_name_snake_case_plural]]/{$[[model_name_snake_case_singular]]->id}");
+        $this->delete("/[[model_names]]/{$[[model_name]]->id}");
         $this->assertResponseOk();
 
-        $this->assertInstanceSoftDeleted($[[model_name_snake_case_singular]]);
+        $this->assertInstanceSoftDeleted($[[model_name]]);
         $this->seeJsonStructure([
 <?php foreach ($columns as $column): ?>
             '<?=$column->Field?>',

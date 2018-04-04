@@ -1,27 +1,20 @@
 /* eslint-disable no-shadow */
 import Vue from 'vue';
 import Vuex from 'vuex';
-import _ from 'lodash';
 Vue.use(Vuex);
 
 // import * as actions from './actions';
 import * as mutations from './mutations';
 import users from './modules/Users';
 import user from './modules/Users';
+import forms from './modules/Forms';
+import form from './modules/Forms';
 
 export const state = {
     status: {
-        user: {},
-        users: {}
     },
     page: { loading: true, loaded: false, errors: [], message: '' },
     config: require('./config'),
-    user: {},
-    users: [],
-    site: {},
-    sites: {},
-    form: [],
-    forms: [],
 
     /** Don't Chane Me Regex Target For Templating Vue Store */
 };
@@ -43,4 +36,10 @@ export default new Vuex.Store({
     actions,
     mutations,
     getters,
+    modules: {
+        user,
+        users,
+        form,
+        forms,
+    }
 });

@@ -2,7 +2,9 @@
 
 namespace Models;
 
+use General\Site;
 use App\BaseModel;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class User
@@ -13,22 +15,23 @@ use App\BaseModel;
  * @property string $email
  * @property string $password
  * @property string $remember_token
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property \Carbon\Carbon $deleted_at
  *
  * Relationships
  * @property Site[]|\Illuminate\Database\Eloquent\Collection $sites
- * @property Form[]|\Illuminate\Database\Eloquent\Collection $forms
  *
  * Other Properties
+ * @property array $baseTemplate
  *
  * @package Models
  */
 class User extends BaseModel
 {
+    use SoftDeletes;
 
     protected $table = 'users';
     public $timestamps = false;
+
     protected $casts = [
     ];
 
@@ -38,30 +41,18 @@ class User extends BaseModel
     }
 
     /**
-     * Returns Dynamic Model Rules If necessary
-     *
-     * @param integer $user_id
-     *
-     * @return array
-     */
-    public static function rules($user_id = null)
+    * Returns Dynamic Model Rules If necessary
+    *
+    * @return array
+    */
+    public static function rules()
     {
         return [
             'name' => 'required|max:255',
-            'email' => 'required|min:5|max:255|email|unique:users,email,' . $user_id,
+            'email' => 'required|max:255',
             'password' => 'required|max:255',
-            // 'remember_token' => 'required|max:100',
+            'remember_token' => 'required|max:100',
         ];
-    }
-
-    /**
-     * Relationship to the Form Model
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany|Form
-     */
-    public function forms()
-    {
-        return $this->hasMany(Form::class, 'user_id', 'id');
     }
 
     /**

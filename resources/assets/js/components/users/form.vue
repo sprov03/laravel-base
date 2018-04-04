@@ -1,8 +1,8 @@
 <template>
     <div>
-        <basic-input-field property="name" label="Name" :resource="user" :set-resource="setUserProperty" :resource-status="userStatus"></basic-input-field>
-        <basic-input-field property="email" label="Email" :resource="user" :set-resource="setUserProperty" :resource-status="userStatus"></basic-input-field>
-        <basic-input-field property="password" label="Password" :resource="user" :set-resource="setUserProperty" :resource-status="userStatus"></basic-input-field>
+        <basic-input-field v-model="user.name" label="Name" :errors.sync="errors.name"></basic-input-field>
+        <basic-input-field v-model="user.email" label="Email" :errors.sync="errors.email"></basic-input-field>
+        <basic-input-field v-model="user.password" label="Password" :errors.sync="errors.password"></basic-input-field>
 
         <vue-button class="pull-right" :on-click="saveUser" action="save" ref="updateUserButton"></vue-button>
     </div>
@@ -14,35 +14,47 @@
     import basicInputField from '../general/forms/basic-input-field.vue';
 
     module.exports = {
+        data() {
+            return {
+                errors: {}
+            };
+        },
         components: {
             basicInputField,
             vueButton
         },
         computed: {
-            user() {
-                return this.$store.state.user;
-            },
-            userStatus() {
-                return this.$store.state.status.user;
+            user: {
+                get() {
+                    return this.$store.state.user;
+                },
+                set(value) {
+                    // this.$store.commit('sync', {object: this.$store.state.user, value: value});
+                    this.$store.commit('updateResource', {resource: 'user', value: value});
+                }
             }
         },
         methods: {
             saveUser() {
                 if (this.user.id) {
-                    return this.$httpPut('user', {id: this.user.id}, this.user);
+                    return this.$httpPut('user', {id: this.user.id}, this.user)
+                    .catch(this.setErrors);
                 } else {
-                    return this.$httpPost('user', {}, this.user);
+                    return this.$httpPost('user', {}, this.user)
+                    .catch(this.setErrors);
                 }
             },
-            setUserProperty(property, value) {
-                this.$store.commit('UPDATE_MODULE_RESOURCE', {module: 'user', resource: property, value: value});
+            setErrors(error) {
+                this.errors = error.response.data;
+
+                throw error;
             }
         },
         watch:{
             'user': {
-                handler:function() {
+                handler:function(newValue, oldValue) {
                     this.$nextTick(() => {
-                        if (_.isEmpty(this.$store.state.status.user.errors)) {
+                        if (this.errors) {
                             this.$refs.updateUserButton.reset();
                         }
                     });

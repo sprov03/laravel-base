@@ -184,7 +184,7 @@ module.exports = function xhrAdapter(config) {
 };
 
 }).call(this,require('_process'))
-},{"../core/createError":9,"./../core/settle":12,"./../helpers/btoa":16,"./../helpers/buildURL":17,"./../helpers/cookies":19,"./../helpers/isURLSameOrigin":21,"./../helpers/parseHeaders":23,"./../utils":25,"_process":100}],3:[function(require,module,exports){
+},{"../core/createError":9,"./../core/settle":12,"./../helpers/btoa":16,"./../helpers/buildURL":17,"./../helpers/cookies":19,"./../helpers/isURLSameOrigin":21,"./../helpers/parseHeaders":23,"./../utils":25,"_process":30}],3:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -737,7 +737,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 }).call(this,require('_process'))
-},{"./adapters/http":2,"./adapters/xhr":2,"./helpers/normalizeHeaderName":22,"./utils":25,"_process":100}],15:[function(require,module,exports){
+},{"./adapters/http":2,"./adapters/xhr":2,"./helpers/normalizeHeaderName":22,"./utils":25,"_process":30}],15:[function(require,module,exports){
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -1418,1351 +1418,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":15,"is-buffer":97}],26:[function(require,module,exports){
-module.exports = { "default": require("core-js/library/fn/promise"), __esModule: true };
-},{"core-js/library/fn/promise":27}],27:[function(require,module,exports){
-require('../modules/es6.object.to-string');
-require('../modules/es6.string.iterator');
-require('../modules/web.dom.iterable');
-require('../modules/es6.promise');
-require('../modules/es7.promise.finally');
-require('../modules/es7.promise.try');
-module.exports = require('../modules/_core').Promise;
-
-},{"../modules/_core":35,"../modules/es6.object.to-string":90,"../modules/es6.promise":91,"../modules/es6.string.iterator":92,"../modules/es7.promise.finally":93,"../modules/es7.promise.try":94,"../modules/web.dom.iterable":95}],28:[function(require,module,exports){
-module.exports = function (it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-},{}],29:[function(require,module,exports){
-module.exports = function () { /* empty */ };
-
-},{}],30:[function(require,module,exports){
-module.exports = function (it, Constructor, name, forbiddenField) {
-  if (!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)) {
-    throw TypeError(name + ': incorrect invocation!');
-  } return it;
-};
-
-},{}],31:[function(require,module,exports){
-var isObject = require('./_is-object');
-module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-},{"./_is-object":52}],32:[function(require,module,exports){
-// false -> Array#indexOf
-// true  -> Array#includes
-var toIObject = require('./_to-iobject');
-var toLength = require('./_to-length');
-var toAbsoluteIndex = require('./_to-absolute-index');
-module.exports = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject($this);
-    var length = toLength(O.length);
-    var index = toAbsoluteIndex(fromIndex, length);
-    var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-},{"./_to-absolute-index":80,"./_to-iobject":82,"./_to-length":83}],33:[function(require,module,exports){
-// getting tag from 19.1.3.6 Object.prototype.toString()
-var cof = require('./_cof');
-var TAG = require('./_wks')('toStringTag');
-// ES3 wrong here
-var ARG = cof(function () { return arguments; }()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function (it, key) {
-  try {
-    return it[key];
-  } catch (e) { /* empty */ }
-};
-
-module.exports = function (it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
-    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-    // builtinTag case
-    : ARG ? cof(O)
-    // ES3 arguments fallback
-    : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
-
-},{"./_cof":34,"./_wks":87}],34:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = function (it) {
-  return toString.call(it).slice(8, -1);
-};
-
-},{}],35:[function(require,module,exports){
-var core = module.exports = { version: '2.5.1' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-
-},{}],36:[function(require,module,exports){
-// optional / simple context binding
-var aFunction = require('./_a-function');
-module.exports = function (fn, that, length) {
-  aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1: return function (a) {
-      return fn.call(that, a);
-    };
-    case 2: return function (a, b) {
-      return fn.call(that, a, b);
-    };
-    case 3: return function (a, b, c) {
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function (/* ...args */) {
-    return fn.apply(that, arguments);
-  };
-};
-
-},{"./_a-function":28}],37:[function(require,module,exports){
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-},{}],38:[function(require,module,exports){
-// Thank's IE8 for his funny defineProperty
-module.exports = !require('./_fails')(function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-});
-
-},{"./_fails":42}],39:[function(require,module,exports){
-var isObject = require('./_is-object');
-var document = require('./_global').document;
-// typeof document.createElement is 'object' in old IE
-var is = isObject(document) && isObject(document.createElement);
-module.exports = function (it) {
-  return is ? document.createElement(it) : {};
-};
-
-},{"./_global":44,"./_is-object":52}],40:[function(require,module,exports){
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-},{}],41:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var ctx = require('./_ctx');
-var hide = require('./_hide');
-var PROTOTYPE = 'prototype';
-
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var IS_WRAP = type & $export.W;
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE];
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
-  var key, own, out;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    if (own && key in exports) continue;
-    // export native or passed
-    out = own ? target[key] : source[key];
-    // prevent global pollution for namespaces
-    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
-    // bind timers to global for call from export context
-    : IS_BIND && own ? ctx(out, global)
-    // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function (C) {
-      var F = function (a, b, c) {
-        if (this instanceof C) {
-          switch (arguments.length) {
-            case 0: return new C();
-            case 1: return new C(a);
-            case 2: return new C(a, b);
-          } return new C(a, b, c);
-        } return C.apply(this, arguments);
-      };
-      F[PROTOTYPE] = C[PROTOTYPE];
-      return F;
-    // make static versions for prototype methods
-    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if (IS_PROTO) {
-      (exports.virtual || (exports.virtual = {}))[key] = out;
-      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
-    }
-  }
-};
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
-module.exports = $export;
-
-},{"./_core":35,"./_ctx":36,"./_global":44,"./_hide":46}],42:[function(require,module,exports){
-module.exports = function (exec) {
-  try {
-    return !!exec();
-  } catch (e) {
-    return true;
-  }
-};
-
-},{}],43:[function(require,module,exports){
-var ctx = require('./_ctx');
-var call = require('./_iter-call');
-var isArrayIter = require('./_is-array-iter');
-var anObject = require('./_an-object');
-var toLength = require('./_to-length');
-var getIterFn = require('./core.get-iterator-method');
-var BREAK = {};
-var RETURN = {};
-var exports = module.exports = function (iterable, entries, fn, that, ITERATOR) {
-  var iterFn = ITERATOR ? function () { return iterable; } : getIterFn(iterable);
-  var f = ctx(fn, that, entries ? 2 : 1);
-  var index = 0;
-  var length, step, iterator, result;
-  if (typeof iterFn != 'function') throw TypeError(iterable + ' is not iterable!');
-  // fast case for arrays with default iterator
-  if (isArrayIter(iterFn)) for (length = toLength(iterable.length); length > index; index++) {
-    result = entries ? f(anObject(step = iterable[index])[0], step[1]) : f(iterable[index]);
-    if (result === BREAK || result === RETURN) return result;
-  } else for (iterator = iterFn.call(iterable); !(step = iterator.next()).done;) {
-    result = call(iterator, f, step.value, entries);
-    if (result === BREAK || result === RETURN) return result;
-  }
-};
-exports.BREAK = BREAK;
-exports.RETURN = RETURN;
-
-},{"./_an-object":31,"./_ctx":36,"./_is-array-iter":51,"./_iter-call":53,"./_to-length":83,"./core.get-iterator-method":88}],44:[function(require,module,exports){
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self
-  // eslint-disable-next-line no-new-func
-  : Function('return this')();
-if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
-
-},{}],45:[function(require,module,exports){
-var hasOwnProperty = {}.hasOwnProperty;
-module.exports = function (it, key) {
-  return hasOwnProperty.call(it, key);
-};
-
-},{}],46:[function(require,module,exports){
-var dP = require('./_object-dp');
-var createDesc = require('./_property-desc');
-module.exports = require('./_descriptors') ? function (object, key, value) {
-  return dP.f(object, key, createDesc(1, value));
-} : function (object, key, value) {
-  object[key] = value;
-  return object;
-};
-
-},{"./_descriptors":38,"./_object-dp":63,"./_property-desc":70}],47:[function(require,module,exports){
-var document = require('./_global').document;
-module.exports = document && document.documentElement;
-
-},{"./_global":44}],48:[function(require,module,exports){
-module.exports = !require('./_descriptors') && !require('./_fails')(function () {
-  return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
-});
-
-},{"./_descriptors":38,"./_dom-create":39,"./_fails":42}],49:[function(require,module,exports){
-// fast apply, http://jsperf.lnkit.com/fast-apply/5
-module.exports = function (fn, args, that) {
-  var un = that === undefined;
-  switch (args.length) {
-    case 0: return un ? fn()
-                      : fn.call(that);
-    case 1: return un ? fn(args[0])
-                      : fn.call(that, args[0]);
-    case 2: return un ? fn(args[0], args[1])
-                      : fn.call(that, args[0], args[1]);
-    case 3: return un ? fn(args[0], args[1], args[2])
-                      : fn.call(that, args[0], args[1], args[2]);
-    case 4: return un ? fn(args[0], args[1], args[2], args[3])
-                      : fn.call(that, args[0], args[1], args[2], args[3]);
-  } return fn.apply(that, args);
-};
-
-},{}],50:[function(require,module,exports){
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = require('./_cof');
-// eslint-disable-next-line no-prototype-builtins
-module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-},{"./_cof":34}],51:[function(require,module,exports){
-// check on default Array iterator
-var Iterators = require('./_iterators');
-var ITERATOR = require('./_wks')('iterator');
-var ArrayProto = Array.prototype;
-
-module.exports = function (it) {
-  return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
-};
-
-},{"./_iterators":58,"./_wks":87}],52:[function(require,module,exports){
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-},{}],53:[function(require,module,exports){
-// call something on iterator step with safe closing on error
-var anObject = require('./_an-object');
-module.exports = function (iterator, fn, value, entries) {
-  try {
-    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
-  // 7.4.6 IteratorClose(iterator, completion)
-  } catch (e) {
-    var ret = iterator['return'];
-    if (ret !== undefined) anObject(ret.call(iterator));
-    throw e;
-  }
-};
-
-},{"./_an-object":31}],54:[function(require,module,exports){
-'use strict';
-var create = require('./_object-create');
-var descriptor = require('./_property-desc');
-var setToStringTag = require('./_set-to-string-tag');
-var IteratorPrototype = {};
-
-// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-require('./_hide')(IteratorPrototype, require('./_wks')('iterator'), function () { return this; });
-
-module.exports = function (Constructor, NAME, next) {
-  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
-  setToStringTag(Constructor, NAME + ' Iterator');
-};
-
-},{"./_hide":46,"./_object-create":62,"./_property-desc":70,"./_set-to-string-tag":74,"./_wks":87}],55:[function(require,module,exports){
-'use strict';
-var LIBRARY = require('./_library');
-var $export = require('./_export');
-var redefine = require('./_redefine');
-var hide = require('./_hide');
-var has = require('./_has');
-var Iterators = require('./_iterators');
-var $iterCreate = require('./_iter-create');
-var setToStringTag = require('./_set-to-string-tag');
-var getPrototypeOf = require('./_object-gpo');
-var ITERATOR = require('./_wks')('iterator');
-var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
-
-var returnThis = function () { return this; };
-
-module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function (kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS: return function keys() { return new Constructor(this, kind); };
-      case VALUES: return function values() { return new Constructor(this, kind); };
-    } return function entries() { return new Constructor(this, kind); };
-  };
-  var TAG = NAME + ' Iterator';
-  var DEF_VALUES = DEFAULT == VALUES;
-  var VALUES_BUG = false;
-  var proto = Base.prototype;
-  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
-  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
-  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
-  var methods, key, IteratorPrototype;
-  // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if (!LIBRARY && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
-    VALUES_BUG = true;
-    $default = function values() { return $native.call(this); };
-  }
-  // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
-    methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
-};
-
-},{"./_export":41,"./_has":45,"./_hide":46,"./_iter-create":54,"./_iterators":58,"./_library":59,"./_object-gpo":65,"./_redefine":72,"./_set-to-string-tag":74,"./_wks":87}],56:[function(require,module,exports){
-var ITERATOR = require('./_wks')('iterator');
-var SAFE_CLOSING = false;
-
-try {
-  var riter = [7][ITERATOR]();
-  riter['return'] = function () { SAFE_CLOSING = true; };
-  // eslint-disable-next-line no-throw-literal
-  Array.from(riter, function () { throw 2; });
-} catch (e) { /* empty */ }
-
-module.exports = function (exec, skipClosing) {
-  if (!skipClosing && !SAFE_CLOSING) return false;
-  var safe = false;
-  try {
-    var arr = [7];
-    var iter = arr[ITERATOR]();
-    iter.next = function () { return { done: safe = true }; };
-    arr[ITERATOR] = function () { return iter; };
-    exec(arr);
-  } catch (e) { /* empty */ }
-  return safe;
-};
-
-},{"./_wks":87}],57:[function(require,module,exports){
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
-};
-
-},{}],58:[function(require,module,exports){
-module.exports = {};
-
-},{}],59:[function(require,module,exports){
-module.exports = true;
-
-},{}],60:[function(require,module,exports){
-var global = require('./_global');
-var macrotask = require('./_task').set;
-var Observer = global.MutationObserver || global.WebKitMutationObserver;
-var process = global.process;
-var Promise = global.Promise;
-var isNode = require('./_cof')(process) == 'process';
-
-module.exports = function () {
-  var head, last, notify;
-
-  var flush = function () {
-    var parent, fn;
-    if (isNode && (parent = process.domain)) parent.exit();
-    while (head) {
-      fn = head.fn;
-      head = head.next;
-      try {
-        fn();
-      } catch (e) {
-        if (head) notify();
-        else last = undefined;
-        throw e;
-      }
-    } last = undefined;
-    if (parent) parent.enter();
-  };
-
-  // Node.js
-  if (isNode) {
-    notify = function () {
-      process.nextTick(flush);
-    };
-  // browsers with MutationObserver
-  } else if (Observer) {
-    var toggle = true;
-    var node = document.createTextNode('');
-    new Observer(flush).observe(node, { characterData: true }); // eslint-disable-line no-new
-    notify = function () {
-      node.data = toggle = !toggle;
-    };
-  // environments with maybe non-completely correct, but existent Promise
-  } else if (Promise && Promise.resolve) {
-    var promise = Promise.resolve();
-    notify = function () {
-      promise.then(flush);
-    };
-  // for other environments - macrotask based on:
-  // - setImmediate
-  // - MessageChannel
-  // - window.postMessag
-  // - onreadystatechange
-  // - setTimeout
-  } else {
-    notify = function () {
-      // strange IE + webpack dev server bug - use .call(global)
-      macrotask.call(global, flush);
-    };
-  }
-
-  return function (fn) {
-    var task = { fn: fn, next: undefined };
-    if (last) last.next = task;
-    if (!head) {
-      head = task;
-      notify();
-    } last = task;
-  };
-};
-
-},{"./_cof":34,"./_global":44,"./_task":79}],61:[function(require,module,exports){
-'use strict';
-// 25.4.1.5 NewPromiseCapability(C)
-var aFunction = require('./_a-function');
-
-function PromiseCapability(C) {
-  var resolve, reject;
-  this.promise = new C(function ($$resolve, $$reject) {
-    if (resolve !== undefined || reject !== undefined) throw TypeError('Bad Promise constructor');
-    resolve = $$resolve;
-    reject = $$reject;
-  });
-  this.resolve = aFunction(resolve);
-  this.reject = aFunction(reject);
-}
-
-module.exports.f = function (C) {
-  return new PromiseCapability(C);
-};
-
-},{"./_a-function":28}],62:[function(require,module,exports){
-// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = require('./_an-object');
-var dPs = require('./_object-dps');
-var enumBugKeys = require('./_enum-bug-keys');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var Empty = function () { /* empty */ };
-var PROTOTYPE = 'prototype';
-
-// Create object with fake `null` prototype: use iframe Object with cleared prototype
-var createDict = function () {
-  // Thrash, waste and sodomy: IE GC bug
-  var iframe = require('./_dom-create')('iframe');
-  var i = enumBugKeys.length;
-  var lt = '<';
-  var gt = '>';
-  var iframeDocument;
-  iframe.style.display = 'none';
-  require('./_html').appendChild(iframe);
-  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
-  // createDict = iframe.contentWindow.Object;
-  // html.removeChild(iframe);
-  iframeDocument = iframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
-  iframeDocument.close();
-  createDict = iframeDocument.F;
-  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
-  return createDict();
-};
-
-module.exports = Object.create || function create(O, Properties) {
-  var result;
-  if (O !== null) {
-    Empty[PROTOTYPE] = anObject(O);
-    result = new Empty();
-    Empty[PROTOTYPE] = null;
-    // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
-  } else result = createDict();
-  return Properties === undefined ? result : dPs(result, Properties);
-};
-
-},{"./_an-object":31,"./_dom-create":39,"./_enum-bug-keys":40,"./_html":47,"./_object-dps":64,"./_shared-key":75}],63:[function(require,module,exports){
-var anObject = require('./_an-object');
-var IE8_DOM_DEFINE = require('./_ie8-dom-define');
-var toPrimitive = require('./_to-primitive');
-var dP = Object.defineProperty;
-
-exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes) {
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if (IE8_DOM_DEFINE) try {
-    return dP(O, P, Attributes);
-  } catch (e) { /* empty */ }
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
-  if ('value' in Attributes) O[P] = Attributes.value;
-  return O;
-};
-
-},{"./_an-object":31,"./_descriptors":38,"./_ie8-dom-define":48,"./_to-primitive":85}],64:[function(require,module,exports){
-var dP = require('./_object-dp');
-var anObject = require('./_an-object');
-var getKeys = require('./_object-keys');
-
-module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
-  return O;
-};
-
-},{"./_an-object":31,"./_descriptors":38,"./_object-dp":63,"./_object-keys":67}],65:[function(require,module,exports){
-// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has = require('./_has');
-var toObject = require('./_to-object');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var ObjectProto = Object.prototype;
-
-module.exports = Object.getPrototypeOf || function (O) {
-  O = toObject(O);
-  if (has(O, IE_PROTO)) return O[IE_PROTO];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
-    return O.constructor.prototype;
-  } return O instanceof Object ? ObjectProto : null;
-};
-
-},{"./_has":45,"./_shared-key":75,"./_to-object":84}],66:[function(require,module,exports){
-var has = require('./_has');
-var toIObject = require('./_to-iobject');
-var arrayIndexOf = require('./_array-includes')(false);
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-
-module.exports = function (object, names) {
-  var O = toIObject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while (names.length > i) if (has(O, key = names[i++])) {
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-},{"./_array-includes":32,"./_has":45,"./_shared-key":75,"./_to-iobject":82}],67:[function(require,module,exports){
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = require('./_object-keys-internal');
-var enumBugKeys = require('./_enum-bug-keys');
-
-module.exports = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys);
-};
-
-},{"./_enum-bug-keys":40,"./_object-keys-internal":66}],68:[function(require,module,exports){
-module.exports = function (exec) {
-  try {
-    return { e: false, v: exec() };
-  } catch (e) {
-    return { e: true, v: e };
-  }
-};
-
-},{}],69:[function(require,module,exports){
-var anObject = require('./_an-object');
-var isObject = require('./_is-object');
-var newPromiseCapability = require('./_new-promise-capability');
-
-module.exports = function (C, x) {
-  anObject(C);
-  if (isObject(x) && x.constructor === C) return x;
-  var promiseCapability = newPromiseCapability.f(C);
-  var resolve = promiseCapability.resolve;
-  resolve(x);
-  return promiseCapability.promise;
-};
-
-},{"./_an-object":31,"./_is-object":52,"./_new-promise-capability":61}],70:[function(require,module,exports){
-module.exports = function (bitmap, value) {
-  return {
-    enumerable: !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
-  };
-};
-
-},{}],71:[function(require,module,exports){
-var hide = require('./_hide');
-module.exports = function (target, src, safe) {
-  for (var key in src) {
-    if (safe && target[key]) target[key] = src[key];
-    else hide(target, key, src[key]);
-  } return target;
-};
-
-},{"./_hide":46}],72:[function(require,module,exports){
-module.exports = require('./_hide');
-
-},{"./_hide":46}],73:[function(require,module,exports){
-'use strict';
-var global = require('./_global');
-var core = require('./_core');
-var dP = require('./_object-dp');
-var DESCRIPTORS = require('./_descriptors');
-var SPECIES = require('./_wks')('species');
-
-module.exports = function (KEY) {
-  var C = typeof core[KEY] == 'function' ? core[KEY] : global[KEY];
-  if (DESCRIPTORS && C && !C[SPECIES]) dP.f(C, SPECIES, {
-    configurable: true,
-    get: function () { return this; }
-  });
-};
-
-},{"./_core":35,"./_descriptors":38,"./_global":44,"./_object-dp":63,"./_wks":87}],74:[function(require,module,exports){
-var def = require('./_object-dp').f;
-var has = require('./_has');
-var TAG = require('./_wks')('toStringTag');
-
-module.exports = function (it, tag, stat) {
-  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
-};
-
-},{"./_has":45,"./_object-dp":63,"./_wks":87}],75:[function(require,module,exports){
-var shared = require('./_shared')('keys');
-var uid = require('./_uid');
-module.exports = function (key) {
-  return shared[key] || (shared[key] = uid(key));
-};
-
-},{"./_shared":76,"./_uid":86}],76:[function(require,module,exports){
-var global = require('./_global');
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-module.exports = function (key) {
-  return store[key] || (store[key] = {});
-};
-
-},{"./_global":44}],77:[function(require,module,exports){
-// 7.3.20 SpeciesConstructor(O, defaultConstructor)
-var anObject = require('./_an-object');
-var aFunction = require('./_a-function');
-var SPECIES = require('./_wks')('species');
-module.exports = function (O, D) {
-  var C = anObject(O).constructor;
-  var S;
-  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
-};
-
-},{"./_a-function":28,"./_an-object":31,"./_wks":87}],78:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var defined = require('./_defined');
-// true  -> String#at
-// false -> String#codePointAt
-module.exports = function (TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that));
-    var i = toInteger(pos);
-    var l = s.length;
-    var a, b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
-      ? TO_STRING ? s.charAt(i) : a
-      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-},{"./_defined":37,"./_to-integer":81}],79:[function(require,module,exports){
-var ctx = require('./_ctx');
-var invoke = require('./_invoke');
-var html = require('./_html');
-var cel = require('./_dom-create');
-var global = require('./_global');
-var process = global.process;
-var setTask = global.setImmediate;
-var clearTask = global.clearImmediate;
-var MessageChannel = global.MessageChannel;
-var Dispatch = global.Dispatch;
-var counter = 0;
-var queue = {};
-var ONREADYSTATECHANGE = 'onreadystatechange';
-var defer, channel, port;
-var run = function () {
-  var id = +this;
-  // eslint-disable-next-line no-prototype-builtins
-  if (queue.hasOwnProperty(id)) {
-    var fn = queue[id];
-    delete queue[id];
-    fn();
-  }
-};
-var listener = function (event) {
-  run.call(event.data);
-};
-// Node.js 0.9+ & IE10+ has setImmediate, otherwise:
-if (!setTask || !clearTask) {
-  setTask = function setImmediate(fn) {
-    var args = [];
-    var i = 1;
-    while (arguments.length > i) args.push(arguments[i++]);
-    queue[++counter] = function () {
-      // eslint-disable-next-line no-new-func
-      invoke(typeof fn == 'function' ? fn : Function(fn), args);
-    };
-    defer(counter);
-    return counter;
-  };
-  clearTask = function clearImmediate(id) {
-    delete queue[id];
-  };
-  // Node.js 0.8-
-  if (require('./_cof')(process) == 'process') {
-    defer = function (id) {
-      process.nextTick(ctx(run, id, 1));
-    };
-  // Sphere (JS game engine) Dispatch API
-  } else if (Dispatch && Dispatch.now) {
-    defer = function (id) {
-      Dispatch.now(ctx(run, id, 1));
-    };
-  // Browsers with MessageChannel, includes WebWorkers
-  } else if (MessageChannel) {
-    channel = new MessageChannel();
-    port = channel.port2;
-    channel.port1.onmessage = listener;
-    defer = ctx(port.postMessage, port, 1);
-  // Browsers with postMessage, skip WebWorkers
-  // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
-  } else if (global.addEventListener && typeof postMessage == 'function' && !global.importScripts) {
-    defer = function (id) {
-      global.postMessage(id + '', '*');
-    };
-    global.addEventListener('message', listener, false);
-  // IE8-
-  } else if (ONREADYSTATECHANGE in cel('script')) {
-    defer = function (id) {
-      html.appendChild(cel('script'))[ONREADYSTATECHANGE] = function () {
-        html.removeChild(this);
-        run.call(id);
-      };
-    };
-  // Rest old browsers
-  } else {
-    defer = function (id) {
-      setTimeout(ctx(run, id, 1), 0);
-    };
-  }
-}
-module.exports = {
-  set: setTask,
-  clear: clearTask
-};
-
-},{"./_cof":34,"./_ctx":36,"./_dom-create":39,"./_global":44,"./_html":47,"./_invoke":49}],80:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var max = Math.max;
-var min = Math.min;
-module.exports = function (index, length) {
-  index = toInteger(index);
-  return index < 0 ? max(index + length, 0) : min(index, length);
-};
-
-},{"./_to-integer":81}],81:[function(require,module,exports){
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-module.exports = function (it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-},{}],82:[function(require,module,exports){
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = require('./_iobject');
-var defined = require('./_defined');
-module.exports = function (it) {
-  return IObject(defined(it));
-};
-
-},{"./_defined":37,"./_iobject":50}],83:[function(require,module,exports){
-// 7.1.15 ToLength
-var toInteger = require('./_to-integer');
-var min = Math.min;
-module.exports = function (it) {
-  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-},{"./_to-integer":81}],84:[function(require,module,exports){
-// 7.1.13 ToObject(argument)
-var defined = require('./_defined');
-module.exports = function (it) {
-  return Object(defined(it));
-};
-
-},{"./_defined":37}],85:[function(require,module,exports){
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = require('./_is-object');
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function (it, S) {
-  if (!isObject(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-},{"./_is-object":52}],86:[function(require,module,exports){
-var id = 0;
-var px = Math.random();
-module.exports = function (key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-},{}],87:[function(require,module,exports){
-var store = require('./_shared')('wks');
-var uid = require('./_uid');
-var Symbol = require('./_global').Symbol;
-var USE_SYMBOL = typeof Symbol == 'function';
-
-var $exports = module.exports = function (name) {
-  return store[name] || (store[name] =
-    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
-};
-
-$exports.store = store;
-
-},{"./_global":44,"./_shared":76,"./_uid":86}],88:[function(require,module,exports){
-var classof = require('./_classof');
-var ITERATOR = require('./_wks')('iterator');
-var Iterators = require('./_iterators');
-module.exports = require('./_core').getIteratorMethod = function (it) {
-  if (it != undefined) return it[ITERATOR]
-    || it['@@iterator']
-    || Iterators[classof(it)];
-};
-
-},{"./_classof":33,"./_core":35,"./_iterators":58,"./_wks":87}],89:[function(require,module,exports){
-'use strict';
-var addToUnscopables = require('./_add-to-unscopables');
-var step = require('./_iter-step');
-var Iterators = require('./_iterators');
-var toIObject = require('./_to-iobject');
-
-// 22.1.3.4 Array.prototype.entries()
-// 22.1.3.13 Array.prototype.keys()
-// 22.1.3.29 Array.prototype.values()
-// 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = require('./_iter-define')(Array, 'Array', function (iterated, kind) {
-  this._t = toIObject(iterated); // target
-  this._i = 0;                   // next index
-  this._k = kind;                // kind
-// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var kind = this._k;
-  var index = this._i++;
-  if (!O || index >= O.length) {
-    this._t = undefined;
-    return step(1);
-  }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
-  return step(0, [index, O[index]]);
-}, 'values');
-
-// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
-Iterators.Arguments = Iterators.Array;
-
-addToUnscopables('keys');
-addToUnscopables('values');
-addToUnscopables('entries');
-
-},{"./_add-to-unscopables":29,"./_iter-define":55,"./_iter-step":57,"./_iterators":58,"./_to-iobject":82}],90:[function(require,module,exports){
-
-},{}],91:[function(require,module,exports){
-'use strict';
-var LIBRARY = require('./_library');
-var global = require('./_global');
-var ctx = require('./_ctx');
-var classof = require('./_classof');
-var $export = require('./_export');
-var isObject = require('./_is-object');
-var aFunction = require('./_a-function');
-var anInstance = require('./_an-instance');
-var forOf = require('./_for-of');
-var speciesConstructor = require('./_species-constructor');
-var task = require('./_task').set;
-var microtask = require('./_microtask')();
-var newPromiseCapabilityModule = require('./_new-promise-capability');
-var perform = require('./_perform');
-var promiseResolve = require('./_promise-resolve');
-var PROMISE = 'Promise';
-var TypeError = global.TypeError;
-var process = global.process;
-var $Promise = global[PROMISE];
-var isNode = classof(process) == 'process';
-var empty = function () { /* empty */ };
-var Internal, newGenericPromiseCapability, OwnPromiseCapability, Wrapper;
-var newPromiseCapability = newGenericPromiseCapability = newPromiseCapabilityModule.f;
-
-var USE_NATIVE = !!function () {
-  try {
-    // correct subclassing with @@species support
-    var promise = $Promise.resolve(1);
-    var FakePromise = (promise.constructor = {})[require('./_wks')('species')] = function (exec) {
-      exec(empty, empty);
-    };
-    // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
-    return (isNode || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise;
-  } catch (e) { /* empty */ }
-}();
-
-// helpers
-var isThenable = function (it) {
-  var then;
-  return isObject(it) && typeof (then = it.then) == 'function' ? then : false;
-};
-var notify = function (promise, isReject) {
-  if (promise._n) return;
-  promise._n = true;
-  var chain = promise._c;
-  microtask(function () {
-    var value = promise._v;
-    var ok = promise._s == 1;
-    var i = 0;
-    var run = function (reaction) {
-      var handler = ok ? reaction.ok : reaction.fail;
-      var resolve = reaction.resolve;
-      var reject = reaction.reject;
-      var domain = reaction.domain;
-      var result, then;
-      try {
-        if (handler) {
-          if (!ok) {
-            if (promise._h == 2) onHandleUnhandled(promise);
-            promise._h = 1;
-          }
-          if (handler === true) result = value;
-          else {
-            if (domain) domain.enter();
-            result = handler(value);
-            if (domain) domain.exit();
-          }
-          if (result === reaction.promise) {
-            reject(TypeError('Promise-chain cycle'));
-          } else if (then = isThenable(result)) {
-            then.call(result, resolve, reject);
-          } else resolve(result);
-        } else reject(value);
-      } catch (e) {
-        reject(e);
-      }
-    };
-    while (chain.length > i) run(chain[i++]); // variable length - can't use forEach
-    promise._c = [];
-    promise._n = false;
-    if (isReject && !promise._h) onUnhandled(promise);
-  });
-};
-var onUnhandled = function (promise) {
-  task.call(global, function () {
-    var value = promise._v;
-    var unhandled = isUnhandled(promise);
-    var result, handler, console;
-    if (unhandled) {
-      result = perform(function () {
-        if (isNode) {
-          process.emit('unhandledRejection', value, promise);
-        } else if (handler = global.onunhandledrejection) {
-          handler({ promise: promise, reason: value });
-        } else if ((console = global.console) && console.error) {
-          console.error('Unhandled promise rejection', value);
-        }
-      });
-      // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
-      promise._h = isNode || isUnhandled(promise) ? 2 : 1;
-    } promise._a = undefined;
-    if (unhandled && result.e) throw result.v;
-  });
-};
-var isUnhandled = function (promise) {
-  if (promise._h == 1) return false;
-  var chain = promise._a || promise._c;
-  var i = 0;
-  var reaction;
-  while (chain.length > i) {
-    reaction = chain[i++];
-    if (reaction.fail || !isUnhandled(reaction.promise)) return false;
-  } return true;
-};
-var onHandleUnhandled = function (promise) {
-  task.call(global, function () {
-    var handler;
-    if (isNode) {
-      process.emit('rejectionHandled', promise);
-    } else if (handler = global.onrejectionhandled) {
-      handler({ promise: promise, reason: promise._v });
-    }
-  });
-};
-var $reject = function (value) {
-  var promise = this;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  promise._v = value;
-  promise._s = 2;
-  if (!promise._a) promise._a = promise._c.slice();
-  notify(promise, true);
-};
-var $resolve = function (value) {
-  var promise = this;
-  var then;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  try {
-    if (promise === value) throw TypeError("Promise can't be resolved itself");
-    if (then = isThenable(value)) {
-      microtask(function () {
-        var wrapper = { _w: promise, _d: false }; // wrap
-        try {
-          then.call(value, ctx($resolve, wrapper, 1), ctx($reject, wrapper, 1));
-        } catch (e) {
-          $reject.call(wrapper, e);
-        }
-      });
-    } else {
-      promise._v = value;
-      promise._s = 1;
-      notify(promise, false);
-    }
-  } catch (e) {
-    $reject.call({ _w: promise, _d: false }, e); // wrap
-  }
-};
-
-// constructor polyfill
-if (!USE_NATIVE) {
-  // 25.4.3.1 Promise(executor)
-  $Promise = function Promise(executor) {
-    anInstance(this, $Promise, PROMISE, '_h');
-    aFunction(executor);
-    Internal.call(this);
-    try {
-      executor(ctx($resolve, this, 1), ctx($reject, this, 1));
-    } catch (err) {
-      $reject.call(this, err);
-    }
-  };
-  // eslint-disable-next-line no-unused-vars
-  Internal = function Promise(executor) {
-    this._c = [];             // <- awaiting reactions
-    this._a = undefined;      // <- checked in isUnhandled reactions
-    this._s = 0;              // <- state
-    this._d = false;          // <- done
-    this._v = undefined;      // <- value
-    this._h = 0;              // <- rejection state, 0 - default, 1 - handled, 2 - unhandled
-    this._n = false;          // <- notify
-  };
-  Internal.prototype = require('./_redefine-all')($Promise.prototype, {
-    // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
-    then: function then(onFulfilled, onRejected) {
-      var reaction = newPromiseCapability(speciesConstructor(this, $Promise));
-      reaction.ok = typeof onFulfilled == 'function' ? onFulfilled : true;
-      reaction.fail = typeof onRejected == 'function' && onRejected;
-      reaction.domain = isNode ? process.domain : undefined;
-      this._c.push(reaction);
-      if (this._a) this._a.push(reaction);
-      if (this._s) notify(this, false);
-      return reaction.promise;
-    },
-    // 25.4.5.1 Promise.prototype.catch(onRejected)
-    'catch': function (onRejected) {
-      return this.then(undefined, onRejected);
-    }
-  });
-  OwnPromiseCapability = function () {
-    var promise = new Internal();
-    this.promise = promise;
-    this.resolve = ctx($resolve, promise, 1);
-    this.reject = ctx($reject, promise, 1);
-  };
-  newPromiseCapabilityModule.f = newPromiseCapability = function (C) {
-    return C === $Promise || C === Wrapper
-      ? new OwnPromiseCapability(C)
-      : newGenericPromiseCapability(C);
-  };
-}
-
-$export($export.G + $export.W + $export.F * !USE_NATIVE, { Promise: $Promise });
-require('./_set-to-string-tag')($Promise, PROMISE);
-require('./_set-species')(PROMISE);
-Wrapper = require('./_core')[PROMISE];
-
-// statics
-$export($export.S + $export.F * !USE_NATIVE, PROMISE, {
-  // 25.4.4.5 Promise.reject(r)
-  reject: function reject(r) {
-    var capability = newPromiseCapability(this);
-    var $$reject = capability.reject;
-    $$reject(r);
-    return capability.promise;
-  }
-});
-$export($export.S + $export.F * (LIBRARY || !USE_NATIVE), PROMISE, {
-  // 25.4.4.6 Promise.resolve(x)
-  resolve: function resolve(x) {
-    return promiseResolve(LIBRARY && this === Wrapper ? $Promise : this, x);
-  }
-});
-$export($export.S + $export.F * !(USE_NATIVE && require('./_iter-detect')(function (iter) {
-  $Promise.all(iter)['catch'](empty);
-})), PROMISE, {
-  // 25.4.4.1 Promise.all(iterable)
-  all: function all(iterable) {
-    var C = this;
-    var capability = newPromiseCapability(C);
-    var resolve = capability.resolve;
-    var reject = capability.reject;
-    var result = perform(function () {
-      var values = [];
-      var index = 0;
-      var remaining = 1;
-      forOf(iterable, false, function (promise) {
-        var $index = index++;
-        var alreadyCalled = false;
-        values.push(undefined);
-        remaining++;
-        C.resolve(promise).then(function (value) {
-          if (alreadyCalled) return;
-          alreadyCalled = true;
-          values[$index] = value;
-          --remaining || resolve(values);
-        }, reject);
-      });
-      --remaining || resolve(values);
-    });
-    if (result.e) reject(result.v);
-    return capability.promise;
-  },
-  // 25.4.4.4 Promise.race(iterable)
-  race: function race(iterable) {
-    var C = this;
-    var capability = newPromiseCapability(C);
-    var reject = capability.reject;
-    var result = perform(function () {
-      forOf(iterable, false, function (promise) {
-        C.resolve(promise).then(capability.resolve, reject);
-      });
-    });
-    if (result.e) reject(result.v);
-    return capability.promise;
-  }
-});
-
-},{"./_a-function":28,"./_an-instance":30,"./_classof":33,"./_core":35,"./_ctx":36,"./_export":41,"./_for-of":43,"./_global":44,"./_is-object":52,"./_iter-detect":56,"./_library":59,"./_microtask":60,"./_new-promise-capability":61,"./_perform":68,"./_promise-resolve":69,"./_redefine-all":71,"./_set-species":73,"./_set-to-string-tag":74,"./_species-constructor":77,"./_task":79,"./_wks":87}],92:[function(require,module,exports){
-'use strict';
-var $at = require('./_string-at')(true);
-
-// 21.1.3.27 String.prototype[@@iterator]()
-require('./_iter-define')(String, 'String', function (iterated) {
-  this._t = String(iterated); // target
-  this._i = 0;                // next index
-// 21.1.5.2.1 %StringIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var index = this._i;
-  var point;
-  if (index >= O.length) return { value: undefined, done: true };
-  point = $at(O, index);
-  this._i += point.length;
-  return { value: point, done: false };
-});
-
-},{"./_iter-define":55,"./_string-at":78}],93:[function(require,module,exports){
-// https://github.com/tc39/proposal-promise-finally
-'use strict';
-var $export = require('./_export');
-var core = require('./_core');
-var global = require('./_global');
-var speciesConstructor = require('./_species-constructor');
-var promiseResolve = require('./_promise-resolve');
-
-$export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
-  var C = speciesConstructor(this, core.Promise || global.Promise);
-  var isFunction = typeof onFinally == 'function';
-  return this.then(
-    isFunction ? function (x) {
-      return promiseResolve(C, onFinally()).then(function () { return x; });
-    } : onFinally,
-    isFunction ? function (e) {
-      return promiseResolve(C, onFinally()).then(function () { throw e; });
-    } : onFinally
-  );
-} });
-
-},{"./_core":35,"./_export":41,"./_global":44,"./_promise-resolve":69,"./_species-constructor":77}],94:[function(require,module,exports){
-'use strict';
-// https://github.com/tc39/proposal-promise-try
-var $export = require('./_export');
-var newPromiseCapability = require('./_new-promise-capability');
-var perform = require('./_perform');
-
-$export($export.S, 'Promise', { 'try': function (callbackfn) {
-  var promiseCapability = newPromiseCapability.f(this);
-  var result = perform(callbackfn);
-  (result.e ? promiseCapability.reject : promiseCapability.resolve)(result.v);
-  return promiseCapability.promise;
-} });
-
-},{"./_export":41,"./_new-promise-capability":61,"./_perform":68}],95:[function(require,module,exports){
-require('./es6.array.iterator');
-var global = require('./_global');
-var hide = require('./_hide');
-var Iterators = require('./_iterators');
-var TO_STRING_TAG = require('./_wks')('toStringTag');
-
-var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
-  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
-  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
-  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
-  'TextTrackList,TouchList').split(',');
-
-for (var i = 0; i < DOMIterables.length; i++) {
-  var NAME = DOMIterables[i];
-  var Collection = global[NAME];
-  var proto = Collection && Collection.prototype;
-  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
-  Iterators[NAME] = Iterators.Array;
-}
-
-},{"./_global":44,"./_hide":46,"./_iterators":58,"./_wks":87,"./es6.array.iterator":89}],96:[function(require,module,exports){
+},{"./helpers/bind":15,"is-buffer":27}],26:[function(require,module,exports){
 'use strict';
 var token = '%[a-f0-9]{2}';
 var singleMatcher = new RegExp(token, 'gi');
@@ -2858,7 +1514,7 @@ module.exports = function (encodedURI) {
 	}
 };
 
-},{}],97:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -2881,7 +1537,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],98:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -19969,7 +18625,7 @@ function isSlowBuffer (obj) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],99:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /* global define */
 
 (function (root, pluralize) {
@@ -20461,7 +19117,7 @@ function isSlowBuffer (obj) {
   return pluralize;
 });
 
-},{}],100:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -20647,7 +19303,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],101:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 var objectAssign = require('object-assign');
@@ -20859,7 +19515,7 @@ exports.stringify = function (obj, opts) {
 	}).join('&') : '';
 };
 
-},{"decode-uri-component":96,"object-assign":102,"strict-uri-encode":103}],102:[function(require,module,exports){
+},{"decode-uri-component":26,"object-assign":32,"strict-uri-encode":33}],32:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -20951,7 +19607,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],103:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -20959,7 +19615,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],104:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function (global, factory) {
 	if (typeof define === 'function' && define.amd) {
 		define('uri-templates', [], factory);
@@ -21434,7 +20090,7 @@ module.exports = function (str) {
 	return UriTemplate;
 });
 
-},{}],105:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var Vue // late bind
 var map = Object.create(null)
 var shimmed = false
@@ -21735,7 +20391,7 @@ function format (id) {
   return match ? match[0] : id
 }
 
-},{}],106:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function (process,global){
 /*!
  * Vue.js v2.5.3
@@ -32354,7 +31010,7 @@ Vue$3.compile = compileToFunctions;
 module.exports = Vue$3;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":100}],107:[function(require,module,exports){
+},{"_process":30}],37:[function(require,module,exports){
 (function (process){
 /**
  * vuex v3.0.1
@@ -33290,7 +31946,7 @@ var index = {
 module.exports = index;
 
 }).call(this,require('_process'))
-},{"_process":100}],108:[function(require,module,exports){
+},{"_process":30}],38:[function(require,module,exports){
 'use strict';
 
 var _vue = require('vue');
@@ -33324,15 +31980,241 @@ var app = new _vue2.default({
         /** Page Components **/
         usersIndex: require('./components/users/index.vue'),
         usersCreate: require('./components/users/create.vue'),
-        usersEdit: require('./components/users/edit.vue')
+        usersEdit: require('./components/users/edit.vue'),
+        formsIndex: require('./components/forms/index.vue'),
+        formsCreate: require('./components/forms/create.vue'),
+        formsEdit: require('./components/forms/edit.vue')
     },
     mixins: [],
     created: function created() {
         console.log('app created');
+    },
+
+    directives: {
+        state: {
+            bind: function bind(element, binding) {
+                _store2.default.commit('setState', binding.value);
+            }
+        }
     }
+
 });
 
-},{"./components/users/create.vue":112,"./components/users/edit.vue":113,"./components/users/index.vue":115,"./http.js":117,"./store":119,"vue":106,"vuex":107}],109:[function(require,module,exports){
+},{"./components/forms/create.vue":39,"./components/forms/edit.vue":40,"./components/forms/index.vue":42,"./components/users/create.vue":48,"./components/users/edit.vue":49,"./components/users/index.vue":51,"./http.js":52,"./store":54,"vue":36,"vuex":37}],39:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _form = require('./form.vue');
+
+var _form2 = _interopRequireDefault(_form);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+    name: 'form',
+    data: function data() {
+        return {};
+    },
+
+    components: {
+        formsForm: _form2.default
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Create Form</h1>\n        </div>\n    </div>\n\n    <div class=\"row\">\n        <div class=\"col-12\">\n            <forms-form></forms-form>\n        </div>\n    </div>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-54ee0409", module.exports)
+  } else {
+    hotAPI.update("_v-54ee0409", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./form.vue":41,"vue":36,"vue-hot-reload-api":35}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _form = require('./form.vue');
+
+var _form2 = _interopRequireDefault(_form);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+    name: 'form',
+    data: function data() {
+        return {
+            pageLoaded: true
+        };
+    },
+
+    mixins: [],
+    components: {
+        formsForm: _form2.default
+    },
+    mounted: function mounted() {
+        this.$httpGet('form', { id: 5 }).then(function () {}, function () {});
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Edit Form</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n        </div>\n    </div>\n\n    <div v-else=\"\">\n        <forms-form></forms-form>\n    </div>\n\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-90cc9952", module.exports)
+  } else {
+    hotAPI.update("_v-90cc9952", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./form.vue":41,"vue":36,"vue-hot-reload-api":35}],41:[function(require,module,exports){
+'use strict';
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _vueButton = require('../general/buttons/vue-button.vue');
+
+var _vueButton2 = _interopRequireDefault(_vueButton);
+
+var _basicInputField = require('../general/forms/basic-input-field.vue');
+
+var _basicInputField2 = _interopRequireDefault(_basicInputField);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = {
+    data: function data() {
+        return {
+            errors: {}
+        };
+    },
+
+    components: {
+        basicInputField: _basicInputField2.default,
+        vueButton: _vueButton2.default
+    },
+    computed: {
+        form: function form() {
+            return this.$store.state.form;
+        }
+    },
+    methods: {
+        saveForm: function saveForm() {
+            if (this.form.id) {
+                return this.$httpPut('form', { id: this.form.id }, this.form).catch(this.setErrors);
+            } else {
+                return this.$httpPost('form', {}, this.form).catch(this.setErrors);
+            }
+        },
+        setErrors: function setErrors(error) {
+            this.errors = error.response.data;
+
+            throw error;
+        }
+    },
+    watch: {
+        'form': {
+            handler: function handler(newValue, oldValue) {
+                var _this = this;
+
+                this.$nextTick(function () {
+                    if (_lodash2.default.isEmpty(_this.errors)) {
+                        _this.$refs.updateFormButton.reset();
+                    }
+                });
+
+                this.$store.commit('updateResource', { resource: 'form', value: newValue });
+            },
+            deep: true
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <basic-input-field v-model=\"form.name\" label=\"Name\" :errors.sync=\"errors.name\"></basic-input-field>\n    <basic-input-field v-model=\"form.email\" label=\"Email\" :errors.sync=\"errors.email\"></basic-input-field>\n    <basic-input-field v-model=\"form.password\" label=\"Password\" :errors.sync=\"errors.password\"></basic-input-field>\n\n    <vue-button class=\"pull-right\" :on-click=\"saveForm\" action=\"save\" ref=\"updateFormButton\"></vue-button>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-74586511", module.exports)
+  } else {
+    hotAPI.update("_v-74586511", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../general/buttons/vue-button.vue":43,"../general/forms/basic-input-field.vue":44,"lodash":28,"vue":36,"vue-hot-reload-api":35}],42:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _Forms = require('../../store/modules/Forms');
+
+var _Forms2 = _interopRequireDefault(_Forms);
+
+var _vueTable = require('../general/tables/vue-table.vue');
+
+var _vueTable2 = _interopRequireDefault(_vueTable);
+
+var _axios = require('axios');
+
+var _axios2 = _interopRequireDefault(_axios);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+    name: 'forms',
+    data: function data() {
+        return {
+            columns: [{
+                header: 'Form Id',
+                column: 'id',
+                link: function link(form) {
+                    return '/api/forms/' + form.id + '/edit';
+                }
+            }, {
+                header: 'User Id',
+                column: 'user_id',
+                link: function link(form) {
+                    return '/api/users/' + form.user_id + '/edit';
+                }
+            }]
+        };
+    },
+
+    components: {
+        vueTable: _vueTable2.default
+    },
+    computed: {
+        forms: function forms() {
+            return this.$store.state.forms.data;
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Forms</h1>\n            <a class=\"btn btn-success margin-bottom-md pull-right margin-top-md\" href=\"/api/forms/create\">\n                Create Form\n            </a>\n        </div>\n    </div>\n\n    <div class=\"row\">\n        <div class=\"col-12\">\n            <vue-table :columns=\"columns\" :resources=\"forms\"></vue-table>\n        </div>\n    </div>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-7d547155", module.exports)
+  } else {
+    hotAPI.update("_v-7d547155", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../../store/modules/Forms":55,"../general/tables/vue-table.vue":47,"axios":1,"vue":36,"vue-hot-reload-api":35}],43:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -33440,7 +32322,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-53990c9b", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":106,"vue-hot-reload-api":105}],110:[function(require,module,exports){
+},{"vue":36,"vue-hot-reload-api":35}],44:[function(require,module,exports){
 'use strict';
 
 var _inputField = require('./input-field.vue');
@@ -33450,36 +32332,29 @@ var _inputField2 = _interopRequireDefault(_inputField);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
-    props: ['resource', 'setResource', 'resourceStatus', 'property', 'label', 'type', 'placeholder'],
+    props: ['value', 'label', 'type', 'placeholder', 'errors'],
     components: {
         inputField: _inputField2.default
     },
     watch: {
-        'thisProperty': {
+        'value': {
             handler: function handler(newValue, oldValue) {
                 if (this.hasError) {
-                    this.resourceStatus.errors[this.property] = undefined;
-                    delete this.resourceStatus.errors[this.property];
+                    // Custom Error Validations should go here and if passes then clear the error
+                    this.$emit('update:errors', undefined);
                 }
             }
         }
     },
     computed: {
         hasError: function hasError() {
-            if (!this.resourceStatus || !this.resourceStatus.errors) {
-                return false;
-            }
-
-            return this.resourceStatus.errors[this.property] ? true : false;
-        },
-        thisProperty: function thisProperty() {
-            return this.resource[this.property];
+            return this.errors === [] || !this.errors ? false : true;
         }
     }
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"form-group\" :class=\"{'is-invalid': hasError}\">\n    <label v-if=\"label\" :class=\"{'text-danger': hasError}\">{{label}}</label>\n    <input-field :class=\"{'is-invalid': hasError}\" :resource=\"resource\" :set-resource=\"setResource\" :property=\"property\" :type=\"type || 'text'\" :placeholder=\"placeholder || ''\"></input-field>\n    <div v-if=\"hasError\">\n        <div class=\"text-danger\" v-for=\"error in resourceStatus.errors[property]\">{{error}}</div>\n    </div>\n    <slot></slot>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"form-group\" :class=\"{'is-invalid': hasError}\">\n    <label v-if=\"label\" :class=\"{'text-danger': hasError}\">{{label}}</label>\n    <input @input=\"$emit('input', $event.target.value)\" :value=\"value\" :class=\"{'is-invalid': hasError}\" type=\"type ||'text'\" class=\"form-control\" :placeholder=\"placeholder\">\n    <div v-if=\"hasError\">\n        <div class=\"text-danger\" v-for=\"error in errors\">{{error}}</div>\n    </div>\n    <slot></slot>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33490,22 +32365,14 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-0babc774", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./input-field.vue":111,"vue":106,"vue-hot-reload-api":105}],111:[function(require,module,exports){
+},{"./input-field.vue":45,"vue":36,"vue-hot-reload-api":35}],45:[function(require,module,exports){
 'use strict';
 
 module.exports = {
-    props: ['resource', 'setResource', 'property', 'type', 'placeholder'],
-    methods: {
-        getResource: function getResource(property) {
-            return this.resource[property];
-        },
-        callSetResource: function callSetResource(event) {
-            this.setResource(this.property, event.target.value);
-        }
-    }
+    props: ['value', 'type', 'placeholder']
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<input @input=\"callSetResource\" :value=\"getResource(property)\" type=\"type ||'text'\" class=\"form-control\" :placeholder=\"placeholder\">\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<input @input=\"$emit('input', $event.target.value)\" :value=\"value\" type=\"type ||'text'\" class=\"form-control\" :placeholder=\"placeholder\">\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33516,7 +32383,52 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-aebd1bda", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":106,"vue-hot-reload-api":105}],112:[function(require,module,exports){
+},{"vue":36,"vue-hot-reload-api":35}],46:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+    props: ['resource', 'columns']
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<tr>\n    <th v-for=\"column in columns\">\n        <a v-if=\"column.link\" :href=\"column.link(resource)\">{{resource[column['column']]}}</a>\n        <span v-else=\"\">{{resource[column['column']]}}</span>\n    </th>\n</tr>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-55e95d1e", module.exports)
+  } else {
+    hotAPI.update("_v-55e95d1e", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":36,"vue-hot-reload-api":35}],47:[function(require,module,exports){
+'use strict';
+
+var _vueTableRow = require('./vue-table-row.vue');
+
+var _vueTableRow2 = _interopRequireDefault(_vueTableRow);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = {
+    props: ['resources', 'columns'],
+    components: {
+        vueTableRow: _vueTableRow2.default
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"col-sm-6\">\n        <!--<search :callback=\"searchProducts\"></search>-->\n    </div>\n    <div class=\"col-sm-6\">\n        <div class=\"pull-right\">\n            <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n        </div>\n    </div>\n\n    <table class=\"table table-responsive table-striped table-bordered\">\n        <thead>\n        <tr>\n            <th v-for=\"column in columns\">{{ column.header }}</th>\n        </tr>\n        </thead>\n        <tbody>\n            <tr v-for=\"resource in resources\" is=\"vue-table-row\" :resource=\"resource\" :columns=\"columns\"></tr>\n        </tbody>\n    </table>\n\n    <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  if (!module.hot.data) {
+    hotAPI.createRecord("_v-78296191", module.exports)
+  } else {
+    hotAPI.update("_v-78296191", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./vue-table-row.vue":46,"vue":36,"vue-hot-reload-api":35}],48:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33531,28 +32443,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = {
     name: 'user',
-    data: function data() {
-        return {
-            pageLoaded: true
-        };
-    },
-
-    mixins: [],
     components: {
         usersForm: _form2.default
-    },
-    mounted: function mounted() {
-        var user = {
-            name: '',
-            email: '',
-            password: ''
-        };
-
-        this.$store.commit('UPDATE_RESOURCE', { resource: 'user', value: user });
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Create User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-12\">\n            <users-form></users-form>\n        </div>\n    </div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Create User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\">\n        <div class=\"col-12\">\n            <users-form></users-form>\n        </div>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33563,7 +32459,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-24339090", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./form.vue":114,"vue":106,"vue-hot-reload-api":105}],113:[function(require,module,exports){
+},{"./form.vue":50,"vue":36,"vue-hot-reload-api":35}],49:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33578,22 +32474,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = {
     name: 'user',
-    data: function data() {
-        return {
-            pageLoaded: true
-        };
-    },
-
-    mixins: [],
     components: {
         usersForm: _form2.default
-    },
-    mounted: function mounted() {
-        this.$httpGet('user', { id: 5 }).then(function () {}, function () {});
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Edit User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-12\">\n            Loading Page...\n        </div>\n    </div>\n\n    <div v-else=\"\">\n        <users-form></users-form>\n    </div>\n\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-12\">\n            <h1 class=\"pull-left\">Edit User</h1>\n        </div>\n    </div>\n\n    <div class=\"row\">\n        <div class=\"col-12\">\n            <users-form></users-form>\n        </div>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33604,7 +32490,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-3216b59e", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./form.vue":114,"vue":106,"vue-hot-reload-api":105}],114:[function(require,module,exports){
+},{"./form.vue":50,"vue":36,"vue-hot-reload-api":35}],50:[function(require,module,exports){
 'use strict';
 
 var _lodash = require('lodash');
@@ -33622,37 +32508,48 @@ var _basicInputField2 = _interopRequireDefault(_basicInputField);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
+    data: function data() {
+        return {
+            errors: {}
+        };
+    },
+
     components: {
         basicInputField: _basicInputField2.default,
         vueButton: _vueButton2.default
     },
     computed: {
-        user: function user() {
-            return this.$store.state.user;
-        },
-        userStatus: function userStatus() {
-            return this.$store.state.status.user;
+        user: {
+            get: function get() {
+                return this.$store.state.user;
+            },
+            set: function set(value) {
+                // this.$store.commit('sync', {object: this.$store.state.user, value: value});
+                this.$store.commit('updateResource', { resource: 'user', value: value });
+            }
         }
     },
     methods: {
         saveUser: function saveUser() {
             if (this.user.id) {
-                return this.$httpPut('user', { id: this.user.id }, this.user);
+                return this.$httpPut('user', { id: this.user.id }, this.user).catch(this.setErrors);
             } else {
-                return this.$httpPost('user', {}, this.user);
+                return this.$httpPost('user', {}, this.user).catch(this.setErrors);
             }
         },
-        setUserProperty: function setUserProperty(property, value) {
-            this.$store.commit('UPDATE_MODULE_RESOURCE', { module: 'user', resource: property, value: value });
+        setErrors: function setErrors(error) {
+            this.errors = error.response.data;
+
+            throw error;
         }
     },
     watch: {
         'user': {
-            handler: function handler() {
+            handler: function handler(newValue, oldValue) {
                 var _this = this;
 
                 this.$nextTick(function () {
-                    if (_lodash2.default.isEmpty(_this.$store.state.status.user.errors)) {
+                    if (_this.errors) {
                         _this.$refs.updateUserButton.reset();
                     }
                 });
@@ -33662,7 +32559,7 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <basic-input-field property=\"name\" label=\"Name\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n    <basic-input-field property=\"email\" label=\"Email\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n    <basic-input-field property=\"password\" label=\"Password\" :resource=\"user\" :set-resource=\"setUserProperty\" :resource-status=\"userStatus\"></basic-input-field>\n\n    <vue-button class=\"pull-right\" :on-click=\"saveUser\" action=\"save\" ref=\"updateUserButton\"></vue-button>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <basic-input-field v-model=\"user.name\" label=\"Name\" :errors.sync=\"errors.name\"></basic-input-field>\n    <basic-input-field v-model=\"user.email\" label=\"Email\" :errors.sync=\"errors.email\"></basic-input-field>\n    <basic-input-field v-model=\"user.password\" label=\"Password\" :errors.sync=\"errors.password\"></basic-input-field>\n\n    <vue-button class=\"pull-right\" :on-click=\"saveUser\" action=\"save\" ref=\"updateUserButton\"></vue-button>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33673,28 +32570,16 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-22553150", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../general/buttons/vue-button.vue":109,"../general/forms/basic-input-field.vue":110,"lodash":98,"vue":106,"vue-hot-reload-api":105}],115:[function(require,module,exports){
+},{"../general/buttons/vue-button.vue":43,"../general/forms/basic-input-field.vue":44,"lodash":28,"vue":36,"vue-hot-reload-api":35}],51:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _promise = require('babel-runtime/core-js/promise');
+var _vueTable = require('../general/tables/vue-table.vue');
 
-var _promise2 = _interopRequireDefault(_promise);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _Users = require('../../store/modules/Users');
-
-var _Users2 = _interopRequireDefault(_Users);
-
-var _axios = require('axios');
-
-var _axios2 = _interopRequireDefault(_axios);
+var _vueTable2 = _interopRequireDefault(_vueTable);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33717,9 +32602,9 @@ exports.default = {
         };
     },
 
-    mixins: [],
+    props: ['storeState'],
     components: {
-        userListRow: require('./user-list-row.vue')
+        vueTable: _vueTable2.default
     },
     computed: {
         users: function users() {
@@ -33727,17 +32612,11 @@ exports.default = {
         }
     },
     mounted: function mounted() {
-        var _this = this;
-
-        _promise2.default.all([this.$httpGet('users'), this.$httpGet('forms'), this.$httpGet('sites')]).then(function () {
-            _this.pageLoaded = true;
-        });
-    },
-
-    methods: {}
+        this.$store.commit('setState', this.storeState);
+    }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-xs-12\">\n            <h1 class=\"pull-left\">Users</h1>\n            <a class=\"btn btn-success margin-bottom-md pull-right margin-top-md\" href=\"/api/users/create\">\n                Create User\n            </a>\n        </div>\n    </div>\n\n    <div class=\"row\" v-if=\"! pageLoaded\">\n        <div class=\"col-xs-12\">\n            Loading Users...\n            <!--<loading-and-errors loading-message=\"Loading Products...\"></loading-and-errors>-->\n        </div>\n    </div>\n\n    <div v-else=\"\" class=\"row\">\n        <div class=\"col-xs-12\">\n\n            <div class=\"col-sm-6\">\n                <!--<search :callback=\"searchProducts\"></search>-->\n            </div>\n            <div class=\"col-sm-6\">\n                <div class=\"pull-right\">\n                    <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n                </div>\n            </div>\n\n            <table id=\"users-table\" class=\"table table-responsive table-striped table-bordered\">\n                <thead>\n                <tr>\n                    <th v-for=\"column in columns\">{{ column.header }}</th>\n                </tr>\n                </thead>\n                <tbody>\n                    <tr v-for=\"user in users\" is=\"user-list-row\" :resource=\"user\" :columns=\"columns\"></tr>\n                </tbody>\n            </table>\n\n            <!--<pagination :pagination=\"pagination\" :callback=\"searchProducts\"></pagination>-->\n        </div>\n    </div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div>\n    <div class=\"row margin-bottom-md\">\n        <div class=\"col-xs-12\">\n            <h1 class=\"pull-left\">Users</h1>\n            <a class=\"btn btn-success margin-bottom-md pull-right margin-top-md\" href=\"/api/users/create\">\n                Create User\n            </a>\n        </div>\n    </div>\n\n    <div class=\"row\">\n        <div class=\"col-xs-12\">\n            <vue-table :columns=\"columns\" :resources=\"users\"></vue-table>\n        </div>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -33748,38 +32627,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update("_v-5277b7ee", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../../store/modules/Users":121,"./user-list-row.vue":116,"axios":1,"babel-runtime/core-js/promise":26,"lodash":98,"vue":106,"vue-hot-reload-api":105}],116:[function(require,module,exports){
-'use strict';
-
-// import lpButton from 'app/components/lp-button.vue';
-
-module.exports = {
-    mixins: [],
-    props: ['resource', 'columns'],
-    components: {},
-    data: function data() {
-        return {};
-    },
-    computed: {},
-    watch: {},
-    mounted: function mounted() {},
-
-    methods: {},
-    events: {}
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<tr>\n    <th v-for=\"column in columns\">\n        <a v-if=\"column.link\" :href=\"column.link(resource)\">{{resource[column['column']]}}</a>\n        <span v-else=\"\">{{resource[column['column']]}}</span>\n    </th>\n</tr>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  if (!module.hot.data) {
-    hotAPI.createRecord("_v-79fcd189", module.exports)
-  } else {
-    hotAPI.update("_v-79fcd189", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"vue":106,"vue-hot-reload-api":105}],117:[function(require,module,exports){
+},{"../general/tables/vue-table.vue":47,"vue":36,"vue-hot-reload-api":35}],52:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33810,28 +32658,11 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.get(url, query || {}).then(function (response) {
-            var status = {
-                loading: false,
-                loaded: true,
-                errors: []
-            };
-
-            _this.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-            _this.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+            _this.$store.commit('updateResource', { resource: resource, value: response.data });
 
             return response;
         }).catch(function (error) {
-            var response = error.response;
-
-            var status = {
-                loading: false,
-                loaded: false,
-                errors: response.data
-            };
-
-            _this.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
-
-            throw response;
+            throw error;
         });
     };
 
@@ -33841,28 +32672,11 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.post(url, fieldBag || {}).then(function (response) {
-            var status = {
-                loading: false,
-                loaded: true,
-                errors: []
-            };
-
-            _this2.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-            _this2.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+            _this2.$store.commit('updateResource', { resource: resource, value: response.data });
 
             return response;
         }).catch(function (error) {
-            var response = error.response;
-
-            var status = {
-                loading: false,
-                loaded: false,
-                errors: response.data
-            };
-
-            _this2.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
-
-            throw response;
+            throw error;
         });
     };
 
@@ -33872,28 +32686,11 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.put(url, fieldBag || {}).then(function (response) {
-            var status = {
-                loading: false,
-                loaded: true,
-                errors: []
-            };
-
-            _this3.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-            _this3.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+            _this3.$store.commit('updateResource', { resource: resource, value: response.data });
 
             return response;
         }).catch(function (error) {
-            var response = error.response;
-
-            var status = {
-                loading: false,
-                loaded: false,
-                errors: response.data
-            };
-
-            _this3.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
-
-            throw response;
+            throw error;
         });
     };
 
@@ -33903,28 +32700,11 @@ Http.install = function (Vue, options) {
         var url = (0, _uriTemplates2.default)('/api/' + (0, _pluralize2.default)(resource) + '{/id}{/action}').fill(urlParams || {});
 
         return _axios2.default.delete(url).then(function (response) {
-            var status = {
-                loading: false,
-                loaded: true,
-                errors: []
-            };
-
-            _this4.$store.commit('UPDATE_RESOURCE', { resource: resource, value: response.data });
-            _this4.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
+            _this4.$store.commit('updateResource', { resource: resource, value: response.data });
 
             return response;
         }).catch(function (error) {
-            var response = error.response;
-
-            var status = {
-                loading: false,
-                loaded: false,
-                errors: response.data
-            };
-
-            _this4.$store.commit('UPDATE_RESOURCE_STATUS', { resource: resource, value: status });
-
-            throw response;
+            throw error;
         });
     };
 };
@@ -33933,7 +32713,7 @@ exports.default = Http; /**
                         * Created by shawnpivonka on 11/14/17.
                         */
 
-},{"axios":1,"pluralize":99,"uri-templates":104}],118:[function(require,module,exports){
+},{"axios":1,"pluralize":29,"uri-templates":34}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -33941,7 +32721,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = {};
 
-},{}],119:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -33957,10 +32737,6 @@ var _vuex = require('vuex');
 
 var _vuex2 = _interopRequireDefault(_vuex);
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
 var _mutations = require('./mutations');
 
 var mutations = _interopRequireWildcard(_mutations);
@@ -33969,27 +32745,22 @@ var _Users = require('./modules/Users');
 
 var _Users2 = _interopRequireDefault(_Users);
 
+var _Forms = require('./modules/Forms');
+
+var _Forms2 = _interopRequireDefault(_Forms);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* eslint-disable no-shadow */
 _vue2.default.use(_vuex2.default);
 
 // import * as actions from './actions';
-/* eslint-disable no-shadow */
 var state = exports.state = {
-    status: {
-        user: {},
-        users: {}
-    },
+    status: {},
     page: { loading: true, loaded: false, errors: [], message: '' },
-    config: require('./config'),
-    user: {},
-    users: [],
-    site: {},
-    sites: {},
-    form: [],
-    forms: []
+    config: require('./config')
 
     /** Don't Chane Me Regex Target For Templating Vue Store */
 };
@@ -34008,10 +32779,16 @@ exports.default = new _vuex2.default.Store({
     state: state,
     actions: actions,
     mutations: mutations,
-    getters: getters
+    getters: getters,
+    modules: {
+        user: _Users2.default,
+        users: _Users2.default,
+        form: _Forms2.default,
+        forms: _Forms2.default
+    }
 });
 
-},{"./config":118,"./modules/Users":121,"./mutations":122,"lodash":98,"vue":106,"vuex":107}],120:[function(require,module,exports){
+},{"./config":53,"./modules/Forms":55,"./modules/Users":56,"./mutations":57,"vue":36,"vuex":37}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -34034,23 +32811,19 @@ var actions = exports.actions = {
 exports.default = {
     namespaced: true,
     state: function state() {
-        return [this.actions.getDefault()];
+        return [actions.getDefault()];
     },
 
     actions: actions
 };
 
-},{}],121:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.mutations = exports.actions = exports.getters = undefined;
-
-var _Forms = require('./Forms');
-
-var _Forms2 = _interopRequireDefault(_Forms);
 
 var _axios = require('axios');
 
@@ -34069,9 +32842,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var namespaced = true;
 
 var _state = {
-    user: {
-        forms: []
-    },
+    user: {},
     errors: []
 };
 
@@ -34090,13 +32861,13 @@ exports.default = {
     mutations: mutations
 };
 
-},{"./Forms":120,"axios":1,"lodash":98,"uri-templates":104}],122:[function(require,module,exports){
+},{"axios":1,"lodash":28,"uri-templates":34}],57:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.READ_URL_PARAMETERS = exports.ADD_MODAL = exports.ADD_ALERT = exports.SET_SETTINGS_STYLE = exports.SET_BREADCRUMBS = exports.SET_PAGE_MESSAGE = exports.SET_PAGE_STATUS = exports.SET_STATUS = exports.ADD_STATUS = exports.UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_FIELD = exports.CLEAR_RESOURCE = exports.PUSH_INTO_RESOURCE = exports.ADD_PROPERTY_TO_STORE = exports.UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_RESOURCE = exports.UPDATE_RESOURCE_STATUS = exports.UPDATE_RESOURCE = exports.UPDATE = undefined;
+exports.READ_URL_PARAMETERS = exports.ADD_MODAL = exports.ADD_ALERT = exports.SET_SETTINGS_STYLE = exports.SET_BREADCRUMBS = exports.SET_PAGE_MESSAGE = exports.SET_PAGE_STATUS = exports.SET_STATUS = exports.ADD_STATUS = exports.UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_FIELD = exports.CLEAR_RESOURCE = exports.PUSH_INTO_RESOURCE = exports.ADD_PROPERTY_TO_STORE = exports.updateResource_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = exports.sync = exports.updateModuleField = exports.updateModuleResource = exports.updateResourceStatus = exports.updateResource = exports.setState = exports.UPDATE = undefined;
 
 var _vue = require('vue');
 
@@ -34156,22 +32927,27 @@ var UPDATE = exports.UPDATE = function UPDATE(state, _ref) {
         state[module][resource][field] = value;
     }
 };
+var setState = exports.setState = function setState(state, storeState) {
+    for (var prop in storeState) {
+        state[prop] = storeState[prop];
+    }
+};
 
-var UPDATE_RESOURCE = exports.UPDATE_RESOURCE = function UPDATE_RESOURCE(state, _ref2) {
+var updateResource = exports.updateResource = function updateResource(state, _ref2) {
     var resource = _ref2.resource,
         value = _ref2.value;
 
     state[resource] = value;
 };
 
-var UPDATE_RESOURCE_STATUS = exports.UPDATE_RESOURCE_STATUS = function UPDATE_RESOURCE_STATUS(state, _ref3) {
+var updateResourceStatus = exports.updateResourceStatus = function updateResourceStatus(state, _ref3) {
     var resource = _ref3.resource,
         value = _ref3.value;
 
     state.status[resource] = value;
 };
 
-var UPDATE_MODULE_RESOURCE = exports.UPDATE_MODULE_RESOURCE = function UPDATE_MODULE_RESOURCE(state, _ref4) {
+var updateModuleResource = exports.updateModuleResource = function updateModuleResource(state, _ref4) {
     var module = _ref4.module,
         resource = _ref4.resource,
         value = _ref4.value;
@@ -34179,7 +32955,7 @@ var UPDATE_MODULE_RESOURCE = exports.UPDATE_MODULE_RESOURCE = function UPDATE_MO
     state[module][resource] = value;
 };
 
-var UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_FIELD = function UPDATE_MODULE_FIELD(state, _ref5) {
+var updateModuleField = exports.updateModuleField = function updateModuleField(state, _ref5) {
     var module = _ref5.module,
         resource = _ref5.resource,
         field = _ref5.field,
@@ -34194,57 +32970,64 @@ var UPDATE_MODULE_FIELD = exports.UPDATE_MODULE_FIELD = function UPDATE_MODULE_F
     state[module][resource][field] = value;
 };
 
-var UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = function UPDATE_SUBRESOURCE_BY_INDEX(state, _ref6) {
-    var module = _ref6.module,
-        resource = _ref6.resource,
-        field = _ref6.field,
-        index = _ref6.index,
-        sub_field = _ref6.sub_field,
+var sync = exports.sync = function sync(state, _ref6) {
+    var object = _ref6.object,
         value = _ref6.value;
+
+    object = value;
+};
+
+var UPDATE_SUBRESOURCE_BY_INDEX = exports.UPDATE_SUBRESOURCE_BY_INDEX = function UPDATE_SUBRESOURCE_BY_INDEX(state, _ref7) {
+    var module = _ref7.module,
+        resource = _ref7.resource,
+        field = _ref7.field,
+        index = _ref7.index,
+        sub_field = _ref7.sub_field,
+        value = _ref7.value;
 
     state[module][resource][field][index][sub_field] = value;
 };
 
-var UPDATE_RESOURCE_BY_INDEX = exports.UPDATE_RESOURCE_BY_INDEX = function UPDATE_RESOURCE_BY_INDEX(state, _ref7) {
-    var module = _ref7.module,
-        resource = _ref7.resource,
-        index = _ref7.index,
-        field = _ref7.field,
-        value = _ref7.value;
+var updateResource_BY_INDEX = exports.updateResource_BY_INDEX = function updateResource_BY_INDEX(state, _ref8) {
+    var module = _ref8.module,
+        resource = _ref8.resource,
+        index = _ref8.index,
+        field = _ref8.field,
+        value = _ref8.value;
 
     state[module][resource][index][field] = value;
 };
 
-var ADD_PROPERTY_TO_STORE = exports.ADD_PROPERTY_TO_STORE = function ADD_PROPERTY_TO_STORE(state, _ref8) {
-    var module = _ref8.module,
-        resource = _ref8.resource,
-        field = _ref8.field,
-        initialValue = _ref8.initialValue;
+var ADD_PROPERTY_TO_STORE = exports.ADD_PROPERTY_TO_STORE = function ADD_PROPERTY_TO_STORE(state, _ref9) {
+    var module = _ref9.module,
+        resource = _ref9.resource,
+        field = _ref9.field,
+        initialValue = _ref9.initialValue;
 
     _vue2.default.log.debug('add property to store');
     var value = initialValue || '';
     _vue2.default.set(state[module][resource], field, value);
 };
 
-var PUSH_INTO_RESOURCE = exports.PUSH_INTO_RESOURCE = function PUSH_INTO_RESOURCE(state, _ref9) {
-    var module = _ref9.module,
-        resource = _ref9.resource,
-        value = _ref9.value;
+var PUSH_INTO_RESOURCE = exports.PUSH_INTO_RESOURCE = function PUSH_INTO_RESOURCE(state, _ref10) {
+    var module = _ref10.module,
+        resource = _ref10.resource,
+        value = _ref10.value;
 
     state[module][resource].push(value);
 };
 
-var CLEAR_RESOURCE = exports.CLEAR_RESOURCE = function CLEAR_RESOURCE(state, _ref10) {
-    var module = _ref10.module,
-        resource = _ref10.resource;
+var CLEAR_RESOURCE = exports.CLEAR_RESOURCE = function CLEAR_RESOURCE(state, _ref11) {
+    var module = _ref11.module,
+        resource = _ref11.resource;
 
     _vue2.default.set(state[module], resource, {});
 };
 
-var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_FIELD(state, _ref11) {
-    var path = _ref11.path,
-        field = _ref11.field,
-        value = _ref11.value;
+var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_FIELD(state, _ref12) {
+    var path = _ref12.path,
+        field = _ref12.field,
+        value = _ref12.value;
 
     var reference = path.split('.').reduce(function (obj, index) {
         return obj[index];
@@ -34256,9 +33039,9 @@ var UPDATE_LOOKUP_FIELD = exports.UPDATE_LOOKUP_FIELD = function UPDATE_LOOKUP_F
     }
 };
 
-var UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_RESOURCE = function UPDATE_LOOKUP_RESOURCE(state, _ref12) {
-    var path = _ref12.path,
-        value = _ref12.value;
+var UPDATE_LOOKUP_RESOURCE = exports.UPDATE_LOOKUP_RESOURCE = function UPDATE_LOOKUP_RESOURCE(state, _ref13) {
+    var path = _ref13.path,
+        value = _ref13.value;
 
     var reference = path.split('.').reduce(function (obj, index) {
         return obj[index];
@@ -34271,21 +33054,21 @@ var ADD_STATUS = exports.ADD_STATUS = function ADD_STATUS(state, resource) {
     _vue2.default.set(state.status, resource, { loading: false, loaded: false, errors: [] });
 };
 
-var SET_STATUS = exports.SET_STATUS = function SET_STATUS(state, _ref13) {
-    var resource = _ref13.resource,
-        loading = _ref13.loading,
-        loaded = _ref13.loaded,
-        errors = _ref13.errors;
+var SET_STATUS = exports.SET_STATUS = function SET_STATUS(state, _ref14) {
+    var resource = _ref14.resource,
+        loading = _ref14.loading,
+        loaded = _ref14.loaded,
+        errors = _ref14.errors;
 
     state.status[resource].loading = loading !== undefined ? loading : state.status[resource].loading;
     state.status[resource].loaded = loaded !== undefined ? loaded : state.status[resource].loaded;
     state.status[resource].errors = errors !== undefined ? errors : state.status[resource].errors;
 };
 
-var SET_PAGE_STATUS = exports.SET_PAGE_STATUS = function SET_PAGE_STATUS(state, _ref14) {
-    var loading = _ref14.loading,
-        loaded = _ref14.loaded,
-        errors = _ref14.errors;
+var SET_PAGE_STATUS = exports.SET_PAGE_STATUS = function SET_PAGE_STATUS(state, _ref15) {
+    var loading = _ref15.loading,
+        loaded = _ref15.loaded,
+        errors = _ref15.errors;
 
     state.page.loading = loading !== undefined ? loading : state.page.loading;
     state.page.loaded = loaded !== undefined ? loaded : state.page.loaded;
@@ -34297,18 +33080,18 @@ var SET_PAGE_MESSAGE = exports.SET_PAGE_MESSAGE = function SET_PAGE_MESSAGE(stat
     state.page.message = message;
 };
 
-var SET_BREADCRUMBS = exports.SET_BREADCRUMBS = function SET_BREADCRUMBS(state, _ref15) {
-    var links = _ref15.links,
-        settings = _ref15.settings;
+var SET_BREADCRUMBS = exports.SET_BREADCRUMBS = function SET_BREADCRUMBS(state, _ref16) {
+    var links = _ref16.links,
+        settings = _ref16.settings;
 
     state.breadcrumbs.links = links;
     state.breadcrumbs.settings = settings;
 };
 
-var SET_SETTINGS_STYLE = exports.SET_SETTINGS_STYLE = function SET_SETTINGS_STYLE(state, _ref16) {
-    var icon_class = _ref16.icon_class,
-        button_class = _ref16.button_class,
-        label = _ref16.label;
+var SET_SETTINGS_STYLE = exports.SET_SETTINGS_STYLE = function SET_SETTINGS_STYLE(state, _ref17) {
+    var icon_class = _ref17.icon_class,
+        button_class = _ref17.button_class,
+        label = _ref17.label;
 
     state.breadcrumbs.settings.icon_class = icon_class;
     state.breadcrumbs.settings.button_class = button_class;
@@ -34328,6 +33111,6 @@ var READ_URL_PARAMETERS = exports.READ_URL_PARAMETERS = function READ_URL_PARAME
     state.url.hash = _queryString2.default.parse(location.hash);
 };
 
-},{"lodash":98,"query-string":101,"uri-templates":104,"vue":106}]},{},[108]);
+},{"lodash":28,"query-string":31,"uri-templates":34,"vue":36}]},{},[38]);
 
 //# sourceMappingURL=app.js.map

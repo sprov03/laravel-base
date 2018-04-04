@@ -1,9 +1,9 @@
 [[open_php_tag]]
 
 use Illuminate\Database\Seeder;
-use [[namespace]]\[[model]];
+use [[namespace]]\[[ModelName]];
 
-class [[model]]Seeder extends Seeder
+class [[ModelName]]Seeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,7 +12,7 @@ class [[model]]Seeder extends Seeder
      */
     public function run()
     {
-        $[[model_name_camel_case_singular]] = factory([[model]]::class)->create([
+        $[[modelNames]] = factory([[ModelName]]::class, 20)->create([
 <?php foreach ($columns as $column): ?>
 <?php if (isset($column->faker_type)): ?>
         '<?=$column->Field?>' => $faker-><?=$column->faker_type?>,

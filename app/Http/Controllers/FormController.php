@@ -2,12 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Models\Form;
+use Illuminate\Support\Facades\View;
+use Models\General\Form;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class FormController extends Controller
 {
+    /**
+     * Get Form Index Page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function indexPage()
+    {
+        $state = json_encode([
+            'forms' => Form::paginate(50)
+        ]);
+
+        return View::make('models.forms.index', compact('state'));
+    }
+
+    /**
+     * Get Form Create Page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function create()
+    {
+        $state = json_encode([
+            'form' => Form::baseTemplate()
+        ]);
+
+        return View::make('models.forms.create', compact('state'));
+    }
+
+    /**
+     * Get Form Edit Page
+     *
+     * @param $form_id
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function edit($form_id)
+    {
+        $state = json_encode([
+            'form' => Form::findOrFail($form_id)
+        ]);
+
+        return View::make('models.forms.edit', compact('state'));
+    }
+
     /**
      * Get all Forms
      *
@@ -26,9 +71,9 @@ class FormController extends Controller
     }
 
     /**
-     * Get Single Form
+     * Get Single [[model_name_studly_case_singular]]
      *
-     * GET /forms/{form_id}
+     * GET /forms/{Form_id}
      *
      * @param $form_id
      *
@@ -40,7 +85,7 @@ class FormController extends Controller
     }
 
     /**
-     * Create Single Form
+     * Create Single [[model_name_studly_case_singular]]
      *
      * POST /forms
      *
@@ -56,9 +101,9 @@ class FormController extends Controller
     }
 
     /**
-     * Update Site Form
+     * Update Site [[model_name_studly_case_singular]]
      *
-     * PUT /forms/{form_id}
+     * PUT /forms/{Form_id}
      *
      * @param $form_id Form id
      * @param Request $request
@@ -69,16 +114,16 @@ class FormController extends Controller
     {
         $this->validate($request, Form::rules());
 
-        $form = Form::findOrFail($form_id);
-        $form->update($request->all());
+        $Form = Form::findOrFail($form_id);
+        $Form->update($request->all());
 
-        return $form;
+        return $Form;
     }
 
     /**
      * Destroy Form
      *
-     * DELETE /forms/{form_id}
+     * DELETE /forms/{Form_id}
      *
      * @param $form_id
      *
@@ -86,9 +131,9 @@ class FormController extends Controller
      */
     public function destroy($form_id)
     {
-        $form = Form::findOrFail($form_id);
-        $form->delete();
+        $Form = Form::findOrFail($form_id);
+        $Form->delete();
 
-        return $form;
+        return $Form;
     }
 }

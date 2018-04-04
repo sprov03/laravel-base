@@ -9,24 +9,49 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserController extends Controller
 {
+    /**
+     * Index Page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function indexPage()
     {
-        return View::make('welcome');
+        $state = json_encode([
+            'users' => User::paginate(50)
+        ]);
+
+        return View::make('models.users.index', compact('state'));
     }
+
+    /**
+     * Get Create Page
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function create()
     {
-        return View::make('models.users.create');
+        $state = json_encode([
+            'user' => User::baseTemplate()
+        ]);
+
+        return View::make('models.users.create', compact('state'));
     }
+
+    /**
+     * Get Edit Page
+     *
+     * @param $user_id
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function edit($user_id)
     {
-        $user = User::findOrFail($user_id);
+        $state = json_encode([
+            'user' => User::findOrFail($user_id)
+        ]);
 
-        return View::make('models.users.edit', compact('user'));
+        return View::make('models.users.edit', compact('state'));
     }
-
-
-
-
 
     /**
      * Get all Users

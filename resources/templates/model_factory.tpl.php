@@ -1,7 +1,7 @@
 [[open_php_tag]]
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
-$factory->define([[namespace]]\[[model]]::class, function (Faker\Generator $faker) use ($factory) {
+$factory->define([[namespace]]\[[ModelName]]::class, function (Faker\Generator $faker) use ($factory) {
 
     return [
 <?php foreach ($columns as $column): ?>

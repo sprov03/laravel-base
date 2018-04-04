@@ -6,16 +6,11 @@
             </div>
         </div>
 
-        <div class="row" v-if="! pageLoaded">
+        <div class="row">
             <div class="col-12">
-                Loading Page...
+                <users-form></users-form>
             </div>
         </div>
-
-        <div v-else>
-            <users-form></users-form>
-        </div>
-
     </div>
 </template>
 
@@ -24,18 +19,8 @@
 
     export default {
         name: 'user',
-        data() {
-            return {
-                pageLoaded: true,
-            };
-        },
-        mixins: [],
         components: {
             usersForm
-        },
-        mounted() {
-            this.$httpGet('user', {id: 5})
-            .then(() => {}, () => {});
         },
     };
 </script>

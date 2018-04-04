@@ -1,9 +1,8 @@
 <?php
 
+use App\User;
+use Models\General\Form;
 use Illuminate\Database\Seeder;
-use Models\Form;
-use Models\FormField;
-use Models\User;
 
 class FormSeeder extends Seeder
 {
@@ -14,8 +13,10 @@ class FormSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::first();
-        $form = factory(Form::class)->create(['user_id' => $user->id]);
-        $form->formFields()->saveMany(factory(FormField::class, 10)->make(['form_id' => $form->id]));
+        /** @var User $user */
+        $user = User::firstOrFail();
+        $user->forms()->saveMany(factory(Form::class, 5)->make());
+
+//        $form->formFields()->saveMany(factory(FormField::class, 10)->make(['form_id' => $form->id]));
     }
 }

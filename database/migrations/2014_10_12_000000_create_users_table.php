@@ -21,7 +21,8 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->rememberToken();
-            $table->timestamps();
+//            $table->timestamps();
+            $table->softDeletes();
         });
 
         /**
@@ -36,6 +37,7 @@ class CreateUsersTable extends Migration
 
         Schema::create('forms', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('name');
 
             $table->unsignedInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

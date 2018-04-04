@@ -36,20 +36,25 @@ export const UPDATE = (state, { module, resource, field, value, resourceData, de
         state[module][resource][field] = value;
     }
 };
+export const setState = (state, storeState) => {
+    for (var prop in storeState) {
+       state[prop] = storeState[prop];
+    }
+};
 
-export const UPDATE_RESOURCE = (state, { resource, value }) => {
+export const updateResource = (state, { resource, value }) => {
     state[resource] = value;
 };
 
-export const UPDATE_RESOURCE_STATUS = (state, { resource, value }) => {
+export const updateResourceStatus = (state, { resource, value }) => {
     state.status[resource] = value;
 };
 
-export const UPDATE_MODULE_RESOURCE = (state, { module, resource, value }) => {
+export const updateModuleResource = (state, { module, resource, value }) => {
     state[module][resource] = value;
 };
 
-export const UPDATE_MODULE_FIELD = (state, { module, resource, field, value }) => {
+export const updateModuleField = (state, { module, resource, field, value }) => {
     if (state[module][resource][field] === undefined) {
         Vue.set(state[module][resource], field, value);
 
@@ -59,12 +64,15 @@ export const UPDATE_MODULE_FIELD = (state, { module, resource, field, value }) =
     state[module][resource][field] = value;
 };
 
+export const sync = (state, {object, value}) => {
+    object = value;
+};
 
 export const UPDATE_SUBRESOURCE_BY_INDEX = (state, { module, resource, field, index, sub_field, value }) => {
     state[module][resource][field][index][sub_field] = value;
 };
 
-export const UPDATE_RESOURCE_BY_INDEX = (state, { module, resource, index, field, value }) => {
+export const updateResource_BY_INDEX = (state, { module, resource, index, field, value }) => {
     state[module][resource][index][field] = value;
 };
 

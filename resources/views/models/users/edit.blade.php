@@ -10,7 +10,7 @@
 </head>
 <body class="container">
 <div id="app">
-    <users-edit :user-id="{{$user->id}}"></users-edit>
+    <users-edit v-state="{{$state}}"></users-edit>
 </div>
 </body>
 </html>

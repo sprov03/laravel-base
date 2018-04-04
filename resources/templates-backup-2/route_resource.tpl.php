@@ -1,0 +1,1 @@
+Route::resource('/api/[[model_names]]', '[[ModelName]]Controller');

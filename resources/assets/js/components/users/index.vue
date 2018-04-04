@@ -9,46 +9,16 @@
             </div>
         </div>
 
-        <div class="row" v-if="! pageLoaded">
+        <div class="row">
             <div class="col-xs-12">
-                Loading Users...
-                <!--<loading-and-errors loading-message="Loading Products..."></loading-and-errors>-->
-            </div>
-        </div>
-
-        <div v-else class="row">
-            <div class="col-xs-12">
-
-                <div class="col-sm-6">
-                    <!--<search :callback="searchProducts"></search>-->
-                </div>
-                <div class="col-sm-6">
-                    <div class="pull-right">
-                        <!--<pagination :pagination="pagination" :callback="searchProducts"></pagination>-->
-                    </div>
-                </div>
-
-                <table id="users-table" class="table table-responsive table-striped table-bordered">
-                    <thead>
-                    <tr>
-                        <th v-for="column in columns">{{ column.header }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in users" is="user-list-row" :resource="user" :columns="columns"></tr>
-                    </tbody>
-                </table>
-
-                <!--<pagination :pagination="pagination" :callback="searchProducts"></pagination>-->
+                <vue-table :columns="columns" :resources="users"></vue-table>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    import _ from 'lodash';
-    import userModules from '../../store/modules/Users';
-    import axios from 'axios';
+    import vueTable from '../general/tables/vue-table.vue';
 
     export default {
 
@@ -71,9 +41,9 @@
                 ],
             };
         },
-        mixins: [],
+        props: ['storeState'],
         components: {
-            userListRow: require('./user-list-row.vue'),
+            vueTable
         },
         computed: {
             users() {
@@ -81,17 +51,7 @@
             }
         },
         mounted() {
-            Promise.all([
-                this.$httpGet('users'),
-                this.$httpGet('forms'),
-                this.$httpGet('sites'),
-
-            ])
-            .then(() => {
-                this.pageLoaded = true;
-            });
-        },
-        methods: {
-        },
+            this.$store.commit('setState', this.storeState);
+        }
     };
 </script>

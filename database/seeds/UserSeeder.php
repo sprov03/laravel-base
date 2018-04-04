@@ -12,10 +12,12 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        $user = factory(User::class)->create([
-         'name' => 'Shawn Pivonka',
+        $user = factory(\App\User::class)->create([
+            'name' => 'Shawn Pivonka',
+            'email' => 'sprov03@gmail.com',
+            'password' => Hash::make('test808!')
         ]);
 
-        factory(User::class, 10)->create();
+        factory(\App\User::class, 10)->create();
     }
 }

@@ -10,7 +10,7 @@
     </head>
     <body class="container">
         <div id="app">
-            <users-create></users-create>
+            <users-create v-state="{{$state}}"></users-create>
         </div>
     </body>
 </html>

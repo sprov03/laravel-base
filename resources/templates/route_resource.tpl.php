@@ -1,1 +1,1 @@
-Route::resource('/api/[[model_name_snake_case_plural]]', '[[model_name]]Controller');
+Route::resource('/[[model_names]]', '[[ModelName]]Controller');
