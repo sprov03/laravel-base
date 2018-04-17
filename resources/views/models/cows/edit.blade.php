@@ -13,37 +13,44 @@
     <body class="container">
         <h1>Cows Edit Page</h1>
         <br>
-        <form action="/cows/{{$cow->id}}" method="put" class="form-horizontal">
+        <form action="/cows/{{$cow->id}}" method="POST" class="form-horizontal">
+            <input type="hidden" name="_method" value="PUT">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <div class="form-group">
-                <div class="form-control">
-                    <label for="id">Id:</label>
-                    <input type="text" name="id" value="{{$cow->id}}" class="form-control">
-                </div>
-                <div class="form-control">
-                    <label for="name">Name:</label>
-                    <input type="text" name="name" value="{{$cow->name}}" class="form-control">
-                </div>
-                <div class="form-control">
-                    <label for="deleted_at">DeletedAt:</label>
-                    <input type="text" name="deleted_at" value="{{$cow->deleted_at}}" class="form-control">
-                </div>
-                <div class="form-control">
-                    <label for="created_at">CreatedAt:</label>
-                    <input type="text" name="created_at" value="{{$cow->created_at}}" class="form-control">
-                </div>
-                <div class="form-control">
-                    <label for="updated_at">UpdatedAt:</label>
-                    <input type="text" name="updated_at" value="{{$cow->updated_at}}" class="form-control">
-                </div>
-                <div class="form-control">
-                    <label for="user_id">UserId:</label>
-                    <input type="text" name="user_id" value="{{$cow->user_id}}" class="form-control">
-                </div>
+                <label for="id">Id:</label>
+                <input type="text" name="id" value="{{$cow->id}}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" name="name" value="{{$cow->name}}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="deleted_at">DeletedAt:</label>
+                <input type="text" name="deleted_at" value="{{$cow->deleted_at}}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="created_at">CreatedAt:</label>
+                <input type="text" name="created_at" value="{{$cow->created_at}}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="updated_at">UpdatedAt:</label>
+                <input type="text" name="updated_at" value="{{$cow->updated_at}}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="user_id">UserId:</label>
+                <input type="text" name="user_id" value="{{$cow->user_id}}" class="form-control">
             </div>
 
             <div class="form-group">
                 <button class="btn btn-primary pull-right">Submit</button>
-                <a href="/cows/{{$cow->id}}/delete" class="btn btn-danger pull-left">Delete</a>
+            </div>
+        </form>
+
+        <form action="/cows/{{$cow->id}}" method="POST" class="form-horizontal margin-top-minus-50px">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <button class="btn btn-danger pull-right">Delete</button>
             </div>
         </form>
     </body>

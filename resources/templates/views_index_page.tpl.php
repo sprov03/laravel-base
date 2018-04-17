@@ -12,6 +12,7 @@
 
     <body class="container">
         <h1>[[ModelNames]] Index Page</h1>
+        <a href="/[[model_names]]/create" class="btn btn-primary">Create New [[ModelName]]</a>
         <table class="table table-striped">
             <thead>
                 <tr>

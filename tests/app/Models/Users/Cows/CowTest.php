@@ -15,6 +15,5 @@ class CowTest extends TestCase
         $cow = Cow::first();
 
         $this->assertInstanceOf(User::class, $cow->user);
-        $this->assertCollectionOf(User::class, $cow->users);
     }
 }

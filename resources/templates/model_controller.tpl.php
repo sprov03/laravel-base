@@ -93,7 +93,7 @@ class [[ModelName]]Controller extends Controller
      *
      * @return View
      */
-    public function delete($[[model_name]]_id)
+    public function destroy($[[model_name]]_id)
     {
         $[[ModelName]] = [[ModelName]]::findOrFail($[[model_name]]_id);
         $[[ModelName]]->delete();

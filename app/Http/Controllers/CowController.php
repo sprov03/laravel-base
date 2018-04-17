@@ -65,7 +65,7 @@ class CowController extends Controller
     /**
      * Update Site [[model_name_studly_case_singular]]
      *
-     * PUT /cows/{Cow_id}
+     * PUT /cows/{Cow_id}/update
      *
      * @param $cow_id Cow id
      * @param Request $request
@@ -74,7 +74,6 @@ class CowController extends Controller
      */
     public function update($cow_id, Request $request)
     {
-        dd('dddddddddddddd');
         $this->validate($request, Cow::rules());
 
         $cow = Cow::findOrFail($cow_id);
@@ -94,7 +93,7 @@ class CowController extends Controller
      *
      * @return View
      */
-    public function delete($cow_id)
+    public function destroy($cow_id)
     {
         $Cow = Cow::findOrFail($cow_id);
         $Cow->delete();

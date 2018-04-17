@@ -54,6 +54,10 @@ return [
                 'name' => 'views_edit_page',
                 'path' => "resources/views/models/[[model_names]]/edit.blade.php"
             ],
+            [
+                'name' => 'views_create_page',
+                'path' => "resources/views/models/[[model_names]]/create.blade.php"
+            ],
         ],
         'inline_templates' => [
             [

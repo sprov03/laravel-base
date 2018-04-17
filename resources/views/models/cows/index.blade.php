@@ -12,6 +12,7 @@
 
     <body class="container">
         <h1>Cows Index Page</h1>
+        <a href="/cows/create" class="btn btn-primary">Create New Cow</a>
         <table class="table table-striped">
             <thead>
                 <tr>
